@@ -15,9 +15,17 @@ export function ProductsTab() {
   const [editing, setEditing] = useState<string | null>(null);
   const [search, setSearch] = useState("");
 
+  const nextCode = () => {
+    const max = products.reduce((m, p) => {
+      const match = /^OB(\d+)$/i.exec(p.code.trim());
+      return match ? Math.max(m, Number(match[1])) : m;
+    }, 0);
+    return `OB${String(max + 1).padStart(3, "0")}`;
+  };
+
   const save = async () => {
-    if (!form.code || !form.name) return void toast.error("กรุณากรอกรหัสและชื่อสินค้า");
-    const row = { code: form.code.trim(), name: form.name.trim(), unit: form.unit.trim() || "ชิ้น", price: Number(form.price) || 0 };
+    if (!form.name) return void toast.error("กรุณากรอกชื่อสินค้า");
+    const row = { code: editing ? form.code.trim() : nextCode(), name: form.name.trim(), unit: form.unit.trim() || "ชิ้น", price: Number(form.price) || 0 };
     const { error } = editing
       ? await supabase.from("products").update(row).eq("id", editing)
       : await supabase.from("products").insert(row);
