@@ -14,7 +14,248 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      branches: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          note: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          note?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          note?: string | null
+        }
+        Relationships: []
+      }
+      customer_prices: {
+        Row: {
+          customer_id: string
+          id: string
+          price: number
+          product_id: string
+          unit_name: string
+        }
+        Insert: {
+          customer_id: string
+          id?: string
+          price?: number
+          product_id: string
+          unit_name: string
+        }
+        Update: {
+          customer_id?: string
+          id?: string
+          price?: number
+          product_id?: string
+          unit_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_prices_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_prices_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customers: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          note: string | null
+          phone: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          note?: string | null
+          phone?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          note?: string | null
+          phone?: string | null
+        }
+        Relationships: []
+      }
+      product_units: {
+        Row: {
+          created_at: string
+          id: string
+          product_id: string
+          qty_per: number
+          retail_price: number
+          unit_name: string
+          wholesale_price: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          product_id: string
+          qty_per?: number
+          retail_price?: number
+          unit_name: string
+          wholesale_price?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          product_id?: string
+          qty_per?: number
+          retail_price?: number
+          unit_name?: string
+          wholesale_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_units_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      products: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          name: string
+          price: number
+          unit: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          name: string
+          price?: number
+          unit?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          name?: string
+          price?: number
+          unit?: string
+        }
+        Relationships: []
+      }
+      transaction_items: {
+        Row: {
+          id: string
+          note: string | null
+          price: number
+          price_type: string
+          product_id: string | null
+          product_name: string
+          qty: number
+          transaction_id: string
+          unit_name: string
+        }
+        Insert: {
+          id?: string
+          note?: string | null
+          price?: number
+          price_type?: string
+          product_id?: string | null
+          product_name: string
+          qty?: number
+          transaction_id: string
+          unit_name: string
+        }
+        Update: {
+          id?: string
+          note?: string | null
+          price?: number
+          price_type?: string
+          product_id?: string | null
+          product_name?: string
+          qty?: number
+          transaction_id?: string
+          unit_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transaction_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transaction_items_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transactions: {
+        Row: {
+          branch_id: string | null
+          created_at: string
+          customer_id: string | null
+          id: string
+          kind: string
+          note: string | null
+        }
+        Insert: {
+          branch_id?: string | null
+          created_at?: string
+          customer_id?: string | null
+          id?: string
+          kind: string
+          note?: string | null
+        }
+        Update: {
+          branch_id?: string | null
+          created_at?: string
+          customer_id?: string | null
+          id?: string
+          kind?: string
+          note?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
