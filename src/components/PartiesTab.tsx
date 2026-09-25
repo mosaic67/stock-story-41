@@ -132,7 +132,7 @@ function SpecialPrices({ customerId }: { customerId: string }) {
   const save = async () => {
     if (!f.product_id || !f.price) return void toast.error("เลือกสินค้าและกรอกราคา");
     const { error } = await supabase.from("customer_prices").upsert(
-      { customer_id: customerId, product_id: f.product_id, unit_name: f.unit_name || unitNames(f.product_id)[0] ?? "", price: Number(f.price) },
+      { customer_id: customerId, product_id: f.product_id, unit_name: f.unit_name || (unitNames(f.product_id)[0] ?? ""), price: Number(f.price) },
       { onConflict: "customer_id,product_id,unit_name" });
     if (error) return void toast.error(error.message);
     setF({ product_id: "", unit_name: "", price: "" }); inv("customer_prices"); toast.success("บันทึกราคาพิเศษแล้ว");
