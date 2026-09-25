@@ -30,13 +30,13 @@ export function PartiesTab() {
   const addBranch = async () => {
     if (!bn.trim()) return;
     const { error } = await supabase.from("branches").insert({ name: bn.trim() });
-    if (error) return toast.error(error.message);
+    if (error) return void toast.error(error.message);
     setBn(""); inv("branches");
   };
   const addCustomer = async () => {
     if (!cn.name.trim()) return;
     const { error } = await supabase.from("customers").insert({ name: cn.name.trim(), phone: cn.phone || null });
-    if (error) return toast.error(error.message);
+    if (error) return void toast.error(error.message);
     setCn({ name: "", phone: "" }); inv("customers");
   };
 
@@ -130,11 +130,11 @@ function SpecialPrices({ customerId }: { customerId: string }) {
     return p ? [p.unit, ...units.filter((u) => u.product_id === pid).map((u) => u.unit_name)] : [];
   };
   const save = async () => {
-    if (!f.product_id || !f.price) return toast.error("เลือกสินค้าและกรอกราคา");
+    if (!f.product_id || !f.price) return void toast.error("เลือกสินค้าและกรอกราคา");
     const { error } = await supabase.from("customer_prices").upsert(
-      { customer_id: customerId, product_id: f.product_id, unit_name: f.unit_name || unitNames(f.product_id)[0], price: Number(f.price) },
+      { customer_id: customerId, product_id: f.product_id, unit_name: f.unit_name || unitNames(f.product_id)[0] ?? "", price: Number(f.price) },
       { onConflict: "customer_id,product_id,unit_name" });
-    if (error) return toast.error(error.message);
+    if (error) return void toast.error(error.message);
     setF({ product_id: "", unit_name: "", price: "" }); inv("customer_prices"); toast.success("บันทึกราคาพิเศษแล้ว");
   };
   const sel = "h-9 w-full rounded-md border bg-background px-3 text-sm";

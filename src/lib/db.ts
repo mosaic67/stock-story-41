@@ -58,7 +58,7 @@ export const dayKey = (s: string) => {
   return `${monthKey(s)}-${String(d.getDate()).padStart(2, "0")}`;
 };
 export const monthLabel = (k: string) => {
-  const [y, m] = k.split("-").map(Number);
+  const [y = 2000, m = 1] = k.split("-").map(Number);
   return new Date(y, m - 1, 1).toLocaleDateString("th-TH", { month: "long", year: "numeric" });
 };
 export const txnTotal = (t: Txn) => t.transaction_items.reduce((s, i) => s + Number(i.qty) * Number(i.price), 0);

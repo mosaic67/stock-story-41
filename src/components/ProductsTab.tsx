@@ -16,12 +16,12 @@ export function ProductsTab() {
   const [search, setSearch] = useState("");
 
   const save = async () => {
-    if (!form.code || !form.name) return toast.error("กรุณากรอกรหัสและชื่อสินค้า");
+    if (!form.code || !form.name) return void toast.error("กรุณากรอกรหัสและชื่อสินค้า");
     const row = { code: form.code.trim(), name: form.name.trim(), unit: form.unit.trim() || "ชิ้น", price: Number(form.price) || 0 };
     const { error } = editing
       ? await supabase.from("products").update(row).eq("id", editing)
       : await supabase.from("products").insert(row);
-    if (error) return toast.error(error.message.includes("duplicate") ? "รหัสสินค้านี้มีอยู่แล้ว" : error.message);
+    if (error) return void toast.error(error.message.includes("duplicate") ? "รหัสสินค้านี้มีอยู่แล้ว" : error.message);
     toast.success(editing ? "แก้ไขสินค้าแล้ว" : "เพิ่มสินค้าแล้ว");
     setForm({ code: "", name: "", unit: "", price: "" });
     setEditing(null);
@@ -72,12 +72,12 @@ function SubUnits({ product, units }: { product: Product; units: ProductUnit[] }
   const [open, setOpen] = useState(false);
   const [f, setF] = useState({ unit_name: "", qty_per: "", retail_price: "", wholesale_price: "" });
   const add = async () => {
-    if (!f.unit_name) return toast.error("กรอกชื่อหน่วยย่อย");
+    if (!f.unit_name) return void toast.error("กรอกชื่อหน่วยย่อย");
     const { error } = await supabase.from("product_units").insert({
       product_id: product.id, unit_name: f.unit_name, qty_per: Number(f.qty_per) || 1,
       retail_price: Number(f.retail_price) || 0, wholesale_price: Number(f.wholesale_price) || 0,
     });
-    if (error) return toast.error(error.message);
+    if (error) return void toast.error(error.message);
     setF({ unit_name: "", qty_per: "", retail_price: "", wholesale_price: "" });
     setOpen(false);
     inv("product_units");

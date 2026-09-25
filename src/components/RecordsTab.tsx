@@ -87,20 +87,20 @@ export function RecordsTab() {
 
   const addLine = () => {
     const p = products.find((x) => x.id === pick.product_id);
-    if (!p) return toast.error("เลือกสินค้า");
+    if (!p) return void toast.error("เลือกสินค้า");
     setLines([...lines, { product_id: p.id, product_name: p.name, unit_name: pick.unit_name, qty: Number(pick.qty) || 1, price: Number(pick.price) || 0, price_type: pick.price_type, note: pick.note }]);
     setPick({ ...pick, qty: "1", note: "" });
   };
 
   const saveBill = async () => {
-    if (!partyId) return toast.error(kind === "branch" ? "เลือกสาขา" : "เลือกลูกค้า");
-    if (!lines.length) return toast.error("เพิ่มรายการสินค้าก่อน");
+    if (!partyId) return void toast.error(kind === "branch" ? "เลือกสาขา" : "เลือกลูกค้า");
+    if (!lines.length) return void toast.error("เพิ่มรายการสินค้าก่อน");
     const { data, error } = await supabase.from("transactions").insert({
       kind, note: note || null, branch_id: kind === "branch" ? partyId : null, customer_id: kind === "customer" ? partyId : null,
     }).select().single();
-    if (error || !data) return toast.error(error?.message ?? "ผิดพลาด");
+    if (error || !data) return void toast.error(error?.message ?? "ผิดพลาด");
     const { error: e2 } = await supabase.from("transaction_items").insert(lines.map((l) => ({ ...l, note: l.note || null, transaction_id: data.id })));
-    if (e2) return toast.error(e2.message);
+    if (e2) return void toast.error(e2.message);
     toast.success("บันทึกบิลแล้ว");
     setLines([]); setNote("");
     inv("transactions");
@@ -204,7 +204,7 @@ export function RecordsTab() {
       {days.map(([d, list]) => (
         <div key={d} className="space-y-2">
           <div className="flex items-center justify-between px-1 text-sm">
-            <span className="font-semibold">{fmtDate(list[0].created_at)}</span>
+            <span className="font-semibold">{fmtDate(list[0]!.created_at)}</span>
             <span className="text-muted-foreground">รวมวัน {baht(list.reduce((s, t) => s + txnTotal(t), 0))}</span>
           </div>
           {list.map((t) => <TxnCard key={t.id} t={t} />)}
