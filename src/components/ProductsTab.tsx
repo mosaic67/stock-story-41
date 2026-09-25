@@ -15,9 +15,17 @@ export function ProductsTab() {
   const [editing, setEditing] = useState<string | null>(null);
   const [search, setSearch] = useState("");
 
+  const nextCode = () => {
+    const max = products.reduce((m, p) => {
+      const match = /^OB(\d+)$/i.exec(p.code.trim());
+      return match ? Math.max(m, Number(match[1])) : m;
+    }, 0);
+    return `OB${String(max + 1).padStart(3, "0")}`;
+  };
+
   const save = async () => {
-    if (!form.code || !form.name) return void toast.error("กรุณากรอกรหัสและชื่อสินค้า");
-    const row = { code: form.code.trim(), name: form.name.trim(), unit: form.unit.trim() || "ชิ้น", price: Number(form.price) || 0 };
+    if (!form.name) return void toast.error("กรุณากรอกชื่อสินค้า");
+    const row = { code: editing ? form.code.trim() : nextCode(), name: form.name.trim(), unit: form.unit.trim() || "ชิ้น", price: Number(form.price) || 0 };
     const { error } = editing
       ? await supabase.from("products").update(row).eq("id", editing)
       : await supabase.from("products").insert(row);
@@ -35,7 +43,9 @@ export function ProductsTab() {
       <Card>
         <h2 className="mb-3 font-display text-lg">{editing ? "แก้ไขสินค้า" : "เพิ่มสินค้าใหม่"}</h2>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-          <Input placeholder="รหัสสินค้า" value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value })} />
+          <div className="flex h-10 items-center rounded-md border bg-muted px-3 text-sm text-muted-foreground">
+            รหัส: <span className="ml-1 font-semibold text-foreground">{editing ? form.code : nextCode()}</span>
+          </div>
           <Input placeholder="ชื่อสินค้า" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
           <Input placeholder="หน่วยนับ เช่น ลัง" value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })} />
           <Input placeholder="ราคาขาย" type="number" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} />
