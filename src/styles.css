@@ -132,6 +132,47 @@
   --sidebar-ring: oklch(0.551 0.027 264.364);
 }
 
+@theme inline {
+  --font-sans: "IBM Plex Sans Thai", system-ui, sans-serif;
+  --font-display: "Kanit", "IBM Plex Sans Thai", sans-serif;
+  --font-logo: "Grand Hotel", cursive;
+}
+
+:root {
+  --ig-1: oklch(0.8 0.16 75);
+  --ig-2: oklch(0.63 0.24 15);
+  --ig-3: oklch(0.55 0.25 330);
+  --ig-4: oklch(0.5 0.22 290);
+  --gradient-ig: linear-gradient(45deg, var(--ig-1), var(--ig-2) 45%, var(--ig-3) 75%, var(--ig-4));
+  --background: oklch(0.985 0 0);
+  --foreground: oklch(0.18 0 0);
+  --card: oklch(1 0 0);
+  --muted: oklch(0.96 0 0);
+  --muted-foreground: oklch(0.52 0 0);
+  --secondary: oklch(0.95 0 0);
+  --secondary-foreground: oklch(0.18 0 0);
+  --primary: oklch(0.18 0 0);
+  --primary-foreground: oklch(1 0 0);
+  --border: oklch(0.91 0 0);
+  --input: oklch(0.88 0 0);
+  --radius: 0.75rem;
+}
+
+@utility ig-gradient {
+  background-image: var(--gradient-ig);
+}
+@utility ig-text {
+  background-image: var(--gradient-ig);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+@utility ig-ring {
+  background-image: var(--gradient-ig);
+  border-radius: 9999px;
+  padding: 2px;
+}
+
 @layer base {
   * {
     border-color: var(--color-border);
@@ -140,5 +181,6 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+    font-family: var(--font-sans);
   }
 }
