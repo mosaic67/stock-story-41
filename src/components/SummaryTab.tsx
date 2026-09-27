@@ -17,7 +17,8 @@ export function SummaryTab() {
     const src = kind === "branch" ? branches : customers;
     const rows = src.map((p) => {
       const ts = list.filter((t) => (kind === "branch" ? t.branch_id : t.customer_id) === p.id);
-      return { id: p.id, name: p.name, txns: ts, bills: ts.length, qty: ts.reduce((s, t) => s + t.transaction_items.reduce((a, i) => a + Number(i.qty), 0), 0), total: ts.reduce((s, t) => s + txnTotal(t), 0) };
+      const noDeduct = ts.filter((t) => t.deduct_stock === false);
+      return { id: p.id, name: p.name, txns: ts, noDeduct, noDeductTotal: noDeduct.reduce((s, t) => s + txnTotal(t), 0), bills: ts.length, qty: ts.reduce((s, t) => s + t.transaction_items.reduce((a, i) => a + Number(i.qty), 0), 0), total: ts.reduce((s, t) => s + txnTotal(t), 0) };
     }).sort((a, b) => b.total - a.total);
     return rows;
   };
@@ -28,7 +29,10 @@ export function SummaryTab() {
 
   const BillDetail = ({ t }: { t: Txn }) => (
     <div className="rounded-lg border bg-muted/40 p-3 text-sm">
-      <div className="flex justify-between text-xs text-muted-foreground"><span>{fmtDateTime(t.created_at)}</span><span className="font-semibold text-foreground">{baht(txnTotal(t))}</span></div>
+      <div className="flex justify-between text-xs text-muted-foreground">
+        <span className="flex items-center gap-1.5">{fmtDateTime(t.created_at)}{t.deduct_stock === false && <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-700">ไม่หักสต๊อก</span>}</span>
+        <span className="font-semibold text-foreground">{baht(txnTotal(t))}</span>
+      </div>
       <div className="mt-1.5 space-y-0.5">
         {t.transaction_items.map((i) => (
           <div key={i.id} className="flex justify-between gap-2 text-xs">
