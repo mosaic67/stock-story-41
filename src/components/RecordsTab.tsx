@@ -51,6 +51,7 @@ export function TxnCard({ t }: { t: Txn }) {
       </div>
       {t.note && <p className="mt-2 text-xs text-muted-foreground">หมายเหตุ: {t.note}</p>}
       <div className="mt-2 flex justify-between border-t pt-2 font-semibold"><span>รวม</span><span>{baht(txnTotal(t))}</span></div>
+      {zoom && <BillShotDialog t={t} partyName={party(t)} onClose={() => setZoom(false)} />}
     </Card>
   );
 }
