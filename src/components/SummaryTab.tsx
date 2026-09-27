@@ -84,13 +84,13 @@ export function SummaryTab() {
                         <span>บิลไม่หักสต๊อก ({r.noDeduct.length} บิล)</span>
                         <span>{baht(r.noDeductTotal)}</span>
                       </div>
-                      <div className="space-y-2">{r.noDeduct.map((t) => <BillDetail key={t.id} t={t} />)}</div>
+                      <div className="space-y-2">{r.noDeduct.map((t) => <BillDetail key={t.id} t={t} partyName={r.name} />)}</div>
                     </div>
                   )}
                   {r.noDeduct.length > 0 && r.txns.length > r.noDeduct.length && (
                     <p className="text-xs font-semibold text-muted-foreground">บิลหักสต๊อก ({r.txns.length - r.noDeduct.length} บิล) · {baht(r.total - r.noDeductTotal)}</p>
                   )}
-                  {r.txns.filter((t) => t.deduct_stock !== false).map((t) => <BillDetail key={t.id} t={t} />)}
+                  {r.txns.filter((t) => t.deduct_stock !== false).map((t) => <BillDetail key={t.id} t={t} partyName={r.name} />)}
                 </div>
               )}
             </div>
