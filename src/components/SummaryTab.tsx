@@ -84,8 +84,8 @@ export function SummaryTab() {
           <Card key={l} className="p-3"><p className="text-xs text-muted-foreground">{l}</p><p className="mt-1 font-bold">{v}</p></Card>
         ))}
       </div>
-      <Table title="รายสาขา" rows={bRows} total={bTot} />
-      <Table title="รายลูกค้า" rows={cRows} total={cTot} />
+      <Table title="รายสาขา" rows={bRows} total={bTot} prefix="b" />
+      <Table title="รายลูกค้า" rows={cRows} total={cTot} prefix="c" />
     </div>
   );
 }
