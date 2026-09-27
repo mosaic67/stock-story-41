@@ -33,6 +33,7 @@ export function TxnCard({ t }: { t: Txn }) {
         <div className="min-w-0 flex-1">
           <p className="font-semibold">{party(t)}</p>
           <p className="text-xs text-muted-foreground">{fmtDateTime(t.created_at)}</p>
+          {t.deduct_stock === false && <span className="mt-1 inline-block rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-700">ไม่หักสต๊อก</span>}
         </div>
         <button className="rounded-full p-2 text-muted-foreground hover:bg-muted" aria-label="แชร์ไลน์" onClick={() => shareToLine("OBWangnoi OG — บิล", [t], party)}><Send className="h-4 w-4" /></button>
         <ConfirmDelete label={`บิล ${fmtDateTime(t.created_at)}`} onConfirm={async () => { await supabase.from("transactions").delete().eq("id", t.id); inv("transactions", "products"); toast.success("ลบบิลแล้ว"); }} />
@@ -63,6 +64,7 @@ export function RecordsTab() {
   const [kind, setKind] = useState<"branch" | "customer">("branch");
   const [partyId, setPartyId] = useState("");
   const [note, setNote] = useState("");
+  const [deduct, setDeduct] = useState(true);
   const [lines, setLines] = useState<Line[]>([]);
   const [pick, setPick] = useState({ product_id: "", unit_name: "", price_type: "retail", qty: "1", price: "", note: "" });
 
@@ -102,6 +104,7 @@ export function RecordsTab() {
     if (!lines.length) return void toast.error("เพิ่มรายการสินค้าก่อน");
     const { data, error } = await supabase.from("transactions").insert({
       kind, note: note || null, branch_id: kind === "branch" ? partyId : null, customer_id: kind === "customer" ? partyId : null,
+      deduct_stock: kind === "customer" ? deduct : true,
     }).select().single();
     if (error || !data) return void toast.error(error?.message ?? "ผิดพลาด");
     const { error: e2 } = await supabase.from("transaction_items").insert(lines.map((l) => ({ ...l, note: l.note || null, transaction_id: data.id })));
@@ -180,6 +183,15 @@ export function RecordsTab() {
           </div>
         )}
         <Input className="mt-3" placeholder="หมายเหตุบิล" value={note} onChange={(e) => setNote(e.target.value)} />
+        {kind === "customer" && (
+          <label className="mt-3 flex cursor-pointer items-start gap-2 rounded-xl border p-3 text-sm">
+            <input type="checkbox" className="mt-0.5 h-4 w-4 accent-pink-600" checked={deduct} onChange={(e) => setDeduct(e.target.checked)} />
+            <span>
+              <span className="font-medium">หักสต๊อกสินค้า</span>
+              <span className="block text-xs text-muted-foreground">ปิดไว้ถ้าสินค้าโอนไปสาขาแล้ว ต้องการบันทึกเฉพาะยอดเงินเพื่อเคลียร์บัญชีสิ้นเดือน</span>
+            </span>
+          </label>
+        )}
         <Button className="ig-gradient mt-3 w-full border-0 text-primary-foreground" onClick={saveBill}>บันทึกบิล</Button>
       </Card>
 
