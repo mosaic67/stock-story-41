@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { Plus, Send, Store, User, X } from "lucide-react";
+import { Camera, Plus, Send, Store, User, X } from "lucide-react";
+import { BillShotDialog } from "./BillShotDialog";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,7 @@ export function usePartyName() {
 export function TxnCard({ t }: { t: Txn }) {
   const inv = useInvalidate();
   const party = usePartyName();
+  const [zoom, setZoom] = useState(false);
   return (
     <Card>
       <div className="flex items-start gap-3">
@@ -35,6 +37,7 @@ export function TxnCard({ t }: { t: Txn }) {
           <p className="text-xs text-muted-foreground">{fmtDateTime(t.created_at)}</p>
           {t.deduct_stock === false && <span className="mt-1 inline-block rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-700">ไม่หักสต๊อก</span>}
         </div>
+        <button className="rounded-full p-2 text-muted-foreground hover:bg-muted" aria-label="ขยายบิลเพื่อแคปภาพ" onClick={() => setZoom(true)}><Camera className="h-4 w-4" /></button>
         <button className="rounded-full p-2 text-muted-foreground hover:bg-muted" aria-label="แชร์ไลน์" onClick={() => shareToLine("OBWangnoi OG — บิล", [t], party)}><Send className="h-4 w-4" /></button>
         <ConfirmDelete label={`บิล ${fmtDateTime(t.created_at)}`} onConfirm={async () => { await supabase.from("transactions").delete().eq("id", t.id); inv("transactions", "products"); toast.success("ลบบิลแล้ว"); }} />
       </div>
