@@ -26,6 +26,7 @@ export function SummaryTab() {
   const cRows = agg("customer");
   const bTot = bRows.reduce((s, r) => s + r.total, 0);
   const cTot = cRows.reduce((s, r) => s + r.total, 0);
+  const noDeductTot = list.filter((t) => t.deduct_stock === false).reduce((s, t) => s + txnTotal(t), 0);
 
   const BillDetail = ({ t }: { t: Txn }) => (
     <div className="rounded-lg border bg-muted/40 p-3 text-sm">
@@ -98,8 +99,8 @@ export function SummaryTab() {
           <button key={m} onClick={() => setMonth(m)} className={`shrink-0 rounded-full border px-4 py-1.5 text-sm ${m === month ? "bg-foreground text-background" : "hover:bg-muted"}`}>{m === "all" ? "ทั้งหมด" : monthLabel(m)}</button>
         ))}
       </div>
-      <div className="grid grid-cols-3 gap-2 text-center">
-        {[["ยอดรวม", baht(bTot + cTot)], ["โอนสาขา", baht(bTot)], ["ลูกค้าพิเศษ", baht(cTot)]].map(([l, v]) => (
+      <div className="grid grid-cols-2 gap-2 text-center sm:grid-cols-4">
+        {[["ยอดรวม", baht(bTot + cTot)], ["โอนสาขา", baht(bTot)], ["ลูกค้าพิเศษ", baht(cTot)], ["ไม่หักสต๊อก", baht(noDeductTot)]].map(([l, v]) => (
           <Card key={l} className="p-3"><p className="text-xs text-muted-foreground">{l}</p><p className="mt-1 font-bold">{v}</p></Card>
         ))}
       </div>
