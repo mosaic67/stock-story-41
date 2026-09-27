@@ -17,7 +17,8 @@ export function SummaryTab() {
     const src = kind === "branch" ? branches : customers;
     const rows = src.map((p) => {
       const ts = list.filter((t) => (kind === "branch" ? t.branch_id : t.customer_id) === p.id);
-      return { id: p.id, name: p.name, txns: ts, bills: ts.length, qty: ts.reduce((s, t) => s + t.transaction_items.reduce((a, i) => a + Number(i.qty), 0), 0), total: ts.reduce((s, t) => s + txnTotal(t), 0) };
+      const noDeduct = ts.filter((t) => t.deduct_stock === false);
+      return { id: p.id, name: p.name, txns: ts, noDeduct, noDeductTotal: noDeduct.reduce((s, t) => s + txnTotal(t), 0), bills: ts.length, qty: ts.reduce((s, t) => s + t.transaction_items.reduce((a, i) => a + Number(i.qty), 0), 0), total: ts.reduce((s, t) => s + txnTotal(t), 0) };
     }).sort((a, b) => b.total - a.total);
     return rows;
   };
@@ -25,10 +26,14 @@ export function SummaryTab() {
   const cRows = agg("customer");
   const bTot = bRows.reduce((s, r) => s + r.total, 0);
   const cTot = cRows.reduce((s, r) => s + r.total, 0);
+  const noDeductTot = list.filter((t) => t.deduct_stock === false).reduce((s, t) => s + txnTotal(t), 0);
 
   const BillDetail = ({ t }: { t: Txn }) => (
     <div className="rounded-lg border bg-muted/40 p-3 text-sm">
-      <div className="flex justify-between text-xs text-muted-foreground"><span>{fmtDateTime(t.created_at)}</span><span className="font-semibold text-foreground">{baht(txnTotal(t))}</span></div>
+      <div className="flex justify-between text-xs text-muted-foreground">
+        <span className="flex items-center gap-1.5">{fmtDateTime(t.created_at)}{t.deduct_stock === false && <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-700">ไม่หักสต๊อก</span>}</span>
+        <span className="font-semibold text-foreground">{baht(txnTotal(t))}</span>
+      </div>
       <div className="mt-1.5 space-y-0.5">
         {t.transaction_items.map((i) => (
           <div key={i.id} className="flex justify-between gap-2 text-xs">
@@ -58,11 +63,26 @@ export function SummaryTab() {
                 </div>
                 <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted"><div className="ig-gradient h-full rounded-full" style={{ width: `${total ? (r.total / total) * 100 : 0}%` }} /></div>
                 <p className="mt-0.5 text-xs text-muted-foreground">{r.bills} บิล · {r.qty.toLocaleString("th-TH")} หน่วย</p>
+                {r.noDeduct.length > 0 && (
+                  <p className="mt-0.5 text-xs text-amber-700">ไม่หักสต๊อก: {r.noDeduct.length} บิล · {baht(r.noDeductTotal)}</p>
+                )}
               </button>
               {isOpen && (
                 <div className="mt-2 space-y-2">
                   {r.txns.length === 0 && <p className="text-xs text-muted-foreground">ไม่มีบิลในช่วงนี้</p>}
-                  {r.txns.map((t) => <BillDetail key={t.id} t={t} />)}
+                  {r.noDeduct.length > 0 && (
+                    <div className="rounded-lg border border-amber-200 bg-amber-50 p-2.5">
+                      <div className="mb-1.5 flex items-baseline justify-between text-xs font-semibold text-amber-800">
+                        <span>บิลไม่หักสต๊อก ({r.noDeduct.length} บิล)</span>
+                        <span>{baht(r.noDeductTotal)}</span>
+                      </div>
+                      <div className="space-y-2">{r.noDeduct.map((t) => <BillDetail key={t.id} t={t} />)}</div>
+                    </div>
+                  )}
+                  {r.noDeduct.length > 0 && r.txns.length > r.noDeduct.length && (
+                    <p className="text-xs font-semibold text-muted-foreground">บิลหักสต๊อก ({r.txns.length - r.noDeduct.length} บิล) · {baht(r.total - r.noDeductTotal)}</p>
+                  )}
+                  {r.txns.filter((t) => t.deduct_stock !== false).map((t) => <BillDetail key={t.id} t={t} />)}
                 </div>
               )}
             </div>
@@ -79,8 +99,8 @@ export function SummaryTab() {
           <button key={m} onClick={() => setMonth(m)} className={`shrink-0 rounded-full border px-4 py-1.5 text-sm ${m === month ? "bg-foreground text-background" : "hover:bg-muted"}`}>{m === "all" ? "ทั้งหมด" : monthLabel(m)}</button>
         ))}
       </div>
-      <div className="grid grid-cols-3 gap-2 text-center">
-        {[["ยอดรวม", baht(bTot + cTot)], ["โอนสาขา", baht(bTot)], ["ลูกค้าพิเศษ", baht(cTot)]].map(([l, v]) => (
+      <div className="grid grid-cols-2 gap-2 text-center sm:grid-cols-4">
+        {[["ยอดรวม", baht(bTot + cTot)], ["โอนสาขา", baht(bTot)], ["ลูกค้าพิเศษ", baht(cTot)], ["ไม่หักสต๊อก", baht(noDeductTot)]].map(([l, v]) => (
           <Card key={l} className="p-3"><p className="text-xs text-muted-foreground">{l}</p><p className="mt-1 font-bold">{v}</p></Card>
         ))}
       </div>
