@@ -62,11 +62,26 @@ export function SummaryTab() {
                 </div>
                 <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted"><div className="ig-gradient h-full rounded-full" style={{ width: `${total ? (r.total / total) * 100 : 0}%` }} /></div>
                 <p className="mt-0.5 text-xs text-muted-foreground">{r.bills} บิล · {r.qty.toLocaleString("th-TH")} หน่วย</p>
+                {r.noDeduct.length > 0 && (
+                  <p className="mt-0.5 text-xs text-amber-700">ไม่หักสต๊อก: {r.noDeduct.length} บิล · {baht(r.noDeductTotal)}</p>
+                )}
               </button>
               {isOpen && (
                 <div className="mt-2 space-y-2">
                   {r.txns.length === 0 && <p className="text-xs text-muted-foreground">ไม่มีบิลในช่วงนี้</p>}
-                  {r.txns.map((t) => <BillDetail key={t.id} t={t} />)}
+                  {r.noDeduct.length > 0 && (
+                    <div className="rounded-lg border border-amber-200 bg-amber-50 p-2.5">
+                      <div className="mb-1.5 flex items-baseline justify-between text-xs font-semibold text-amber-800">
+                        <span>บิลไม่หักสต๊อก ({r.noDeduct.length} บิล)</span>
+                        <span>{baht(r.noDeductTotal)}</span>
+                      </div>
+                      <div className="space-y-2">{r.noDeduct.map((t) => <BillDetail key={t.id} t={t} />)}</div>
+                    </div>
+                  )}
+                  {r.noDeduct.length > 0 && r.txns.length > r.noDeduct.length && (
+                    <p className="text-xs font-semibold text-muted-foreground">บิลหักสต๊อก ({r.txns.length - r.noDeduct.length} บิล) · {baht(r.total - r.noDeductTotal)}</p>
+                  )}
+                  {r.txns.filter((t) => t.deduct_stock !== false).map((t) => <BillDetail key={t.id} t={t} />)}
                 </div>
               )}
             </div>
