@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { Camera, ChevronDown, ChevronUp } from "lucide-react";
+import { BillShotDialog } from "./BillShotDialog";
 import { useTable, useTransactions, baht, num, fmtDateTime, monthKey, monthLabel, txnTotal, lineTotal, type Branch, type Customer, type Txn } from "@/lib/db";
 import { Card } from "./ConfirmDelete";
 
@@ -28,11 +29,16 @@ export function SummaryTab() {
   const cTot = cRows.reduce((s, r) => s + r.total, 0);
   const noDeductTot = list.filter((t) => t.deduct_stock === false).reduce((s, t) => s + txnTotal(t), 0);
 
-  const BillDetail = ({ t }: { t: Txn }) => (
+  const BillDetail = ({ t, partyName }: { t: Txn; partyName: string }) => {
+    const [zoom, setZoom] = useState(false);
+    return (
     <div className="rounded-lg border bg-muted/40 p-3 text-sm">
-      <div className="flex justify-between text-xs text-muted-foreground">
+      <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
         <span className="flex items-center gap-1.5">{fmtDateTime(t.created_at)}{t.deduct_stock === false && <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-700">ไม่หักสต๊อก</span>}</span>
-        <span className="font-semibold text-foreground">{baht(txnTotal(t))}</span>
+        <span className="flex items-center gap-1">
+          <button onClick={() => setZoom(true)} className="rounded-full p-1 hover:bg-muted" aria-label="ขยายบิลเพื่อแคปภาพ"><Camera className="h-3.5 w-3.5" /></button>
+          <span className="font-semibold text-foreground">{baht(txnTotal(t))}</span>
+        </span>
       </div>
       <div className="mt-1.5 space-y-0.5">
         {t.transaction_items.map((i) => (
@@ -43,8 +49,10 @@ export function SummaryTab() {
         ))}
       </div>
       {t.note && <p className="mt-1 text-xs text-muted-foreground">หมายเหตุ: {t.note}</p>}
+      {zoom && <BillShotDialog t={t} partyName={partyName} onClose={() => setZoom(false)} />}
     </div>
-  );
+    );
+  };
 
   const Table = ({ title, rows, total, prefix }: { title: string; rows: ReturnType<typeof agg>; total: number; prefix: string }) => (
     <Card>
@@ -76,13 +84,13 @@ export function SummaryTab() {
                         <span>บิลไม่หักสต๊อก ({r.noDeduct.length} บิล)</span>
                         <span>{baht(r.noDeductTotal)}</span>
                       </div>
-                      <div className="space-y-2">{r.noDeduct.map((t) => <BillDetail key={t.id} t={t} />)}</div>
+                      <div className="space-y-2">{r.noDeduct.map((t) => <BillDetail key={t.id} t={t} partyName={r.name} />)}</div>
                     </div>
                   )}
                   {r.noDeduct.length > 0 && r.txns.length > r.noDeduct.length && (
                     <p className="text-xs font-semibold text-muted-foreground">บิลหักสต๊อก ({r.txns.length - r.noDeduct.length} บิล) · {baht(r.total - r.noDeductTotal)}</p>
                   )}
-                  {r.txns.filter((t) => t.deduct_stock !== false).map((t) => <BillDetail key={t.id} t={t} />)}
+                  {r.txns.filter((t) => t.deduct_stock !== false).map((t) => <BillDetail key={t.id} t={t} partyName={r.name} />)}
                 </div>
               )}
             </div>
