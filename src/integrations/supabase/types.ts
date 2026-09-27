@@ -143,6 +143,7 @@ export type Database = {
           id: string
           name: string
           price: number
+          stock: number
           unit: string
         }
         Insert: {
@@ -151,6 +152,7 @@ export type Database = {
           id?: string
           name: string
           price?: number
+          stock?: number
           unit?: string
         }
         Update: {
@@ -159,6 +161,7 @@ export type Database = {
           id?: string
           name?: string
           price?: number
+          stock?: number
           unit?: string
         }
         Relationships: []
@@ -261,7 +264,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      item_base_qty: {
+        Args: { _product: string; _qty: number; _unit: string }
+        Returns: number
+      }
     }
     Enums: {
       [_ in never]: never

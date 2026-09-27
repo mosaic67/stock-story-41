@@ -35,7 +35,7 @@ export function TxnCard({ t }: { t: Txn }) {
           <p className="text-xs text-muted-foreground">{fmtDateTime(t.created_at)}</p>
         </div>
         <button className="rounded-full p-2 text-muted-foreground hover:bg-muted" aria-label="แชร์ไลน์" onClick={() => shareToLine("OBWangnoi OG — บิล", [t], party)}><Send className="h-4 w-4" /></button>
-        <ConfirmDelete label={`บิล ${fmtDateTime(t.created_at)}`} onConfirm={async () => { await supabase.from("transactions").delete().eq("id", t.id); inv("transactions"); toast.success("ลบบิลแล้ว"); }} />
+        <ConfirmDelete label={`บิล ${fmtDateTime(t.created_at)}`} onConfirm={async () => { await supabase.from("transactions").delete().eq("id", t.id); inv("transactions", "products"); toast.success("ลบบิลแล้ว"); }} />
       </div>
       <div className="mt-3 space-y-1 text-sm">
         {t.transaction_items.map((i) => (
@@ -103,7 +103,7 @@ export function RecordsTab() {
     if (e2) return void toast.error(e2.message);
     toast.success("บันทึกบิลแล้ว");
     setLines([]); setNote("");
-    inv("transactions");
+    inv("transactions", "products");
   };
 
   const months = useMemo(() => Array.from(new Set(txns.map((t) => monthKey(t.created_at)))), [txns]);
