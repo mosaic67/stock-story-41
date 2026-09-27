@@ -222,6 +222,7 @@ export type Database = {
           branch_id: string | null
           created_at: string
           customer_id: string | null
+          deduct_stock: boolean
           id: string
           kind: string
           note: string | null
@@ -230,6 +231,7 @@ export type Database = {
           branch_id?: string | null
           created_at?: string
           customer_id?: string | null
+          deduct_stock?: boolean
           id?: string
           kind: string
           note?: string | null
@@ -238,6 +240,7 @@ export type Database = {
           branch_id?: string | null
           created_at?: string
           customer_id?: string | null
+          deduct_stock?: boolean
           id?: string
           kind?: string
           note?: string | null
