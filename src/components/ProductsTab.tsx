@@ -66,13 +66,37 @@ export function ProductsTab() {
             <div className="min-w-0 flex-1">
               <p className="truncate font-semibold">{p.name}</p>
               <p className="text-xs text-muted-foreground">#{p.code} · {baht(Number(p.price))} / {p.unit}</p>
+              <p className={`text-xs font-semibold ${Number(p.stock) <= 0 ? "text-destructive" : "text-foreground"}`}>คงเหลือ {Number(Number(p.stock).toFixed(2)).toLocaleString("th-TH")} {p.unit}</p>
             </div>
             <button className="rounded-full p-2 text-muted-foreground hover:bg-muted" onClick={() => { setEditing(p.id); setForm({ code: p.code, name: p.name, unit: p.unit, price: String(p.price) }); window.scrollTo({ top: 0, behavior: "smooth" }); }}><Pencil className="h-4 w-4" /></button>
             <ConfirmDelete label={p.name} onConfirm={async () => { await supabase.from("products").delete().eq("id", p.id); inv("products", "product_units"); toast.success("ลบแล้ว"); }} />
           </div>
+          <StockAdjust product={p} />
           <SubUnits product={p} units={units.filter((u) => u.product_id === p.id)} />
         </Card>
       ))}
+    </div>
+  );
+}
+
+function StockAdjust({ product }: { product: Product }) {
+  const inv = useInvalidate();
+  const [v, setV] = useState("");
+  const apply = async (mode: "add" | "set") => {
+    const n = Number(v);
+    if (!v || isNaN(n)) return void toast.error("กรอกจำนวน");
+    const stock = mode === "add" ? Number(product.stock) + n : n;
+    const { error } = await supabase.from("products").update({ stock }).eq("id", product.id);
+    if (error) return void toast.error(error.message);
+    toast.success(mode === "add" ? `รับเข้า ${n} ${product.unit}` : "ปรับยอดสต๊อกแล้ว");
+    setV("");
+    inv("products");
+  };
+  return (
+    <div className="mt-3 flex gap-2 border-t pt-3">
+      <Input placeholder={`จำนวน (${product.unit})`} type="number" value={v} onChange={(e) => setV(e.target.value)} className="h-9" />
+      <Button size="sm" variant="secondary" onClick={() => apply("add")}>+ รับเข้า</Button>
+      <Button size="sm" variant="outline" onClick={() => apply("set")}>ตั้งยอด</Button>
     </div>
   );
 }
