@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
-import { useTable, useTransactions, baht, num, fmtDateTime, monthKey, monthLabel, txnTotal, type Branch, type Customer, type Txn } from "@/lib/db";
+import { useTable, useTransactions, baht, num, fmtDateTime, monthKey, monthLabel, txnTotal, lineTotal, type Branch, type Customer, type Txn } from "@/lib/db";
 import { Card } from "./ConfirmDelete";
 
 export function SummaryTab() {
@@ -32,8 +32,8 @@ export function SummaryTab() {
       <div className="mt-1.5 space-y-0.5">
         {t.transaction_items.map((i) => (
           <div key={i.id} className="flex justify-between gap-2 text-xs">
-            <span>• {i.product_name} {num(Number(i.qty))} {i.unit_name} x {baht(Number(i.price))}{i.note ? ` (${i.note})` : ""}</span>
-            <span className="shrink-0">{baht(Number(i.qty) * Number(i.price))}</span>
+            <span>• {i.product_name} {num(Number(i.qty))} {i.unit_name}{i.price_type === "special" ? " (ราคาพิเศษ)" : ` x ${baht(Number(i.price))}`}{i.note ? ` (${i.note})` : ""}</span>
+            <span className="shrink-0">{baht(lineTotal(i))}</span>
           </div>
         ))}
       </div>
