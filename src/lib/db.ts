@@ -73,7 +73,7 @@ export function shareToLine(title: string, txns: Txn[], partyName: (t: Txn) => s
     lines.push(`🕒 ${fmtDateTime(t.created_at)} — ${partyName(t)}`);
     for (const i of t.transaction_items) {
       const sub = lineTotal(i);
-      lines.push(`• ${i.product_name} ${num(Number(i.qty))} ${i.unit_name} x ${baht(Number(i.price))} = ${baht(sub)}${i.note ? ` (${i.note})` : ""}`);
+      lines.push(`• ${i.product_name} ${num(Number(i.qty))} ${i.unit_name}${i.price_type === "special" ? " (ราคาพิเศษ)" : ` x ${baht(Number(i.price))}`} = ${baht(sub)}${i.note ? ` (${i.note})` : ""}`);
     }
     const tot = txnTotal(t);
     grand += tot;
