@@ -23,7 +23,8 @@ const TABS = [
   { id: "products", label: "สินค้า", icon: Package },
   { id: "records", label: "บันทึกรายการ", icon: ClipboardList },
   { id: "parties", label: "สาขา", icon: Store },
-  { id: "summary", label: "สรุปยอด", icon: BarChart3, Scale },
+  { id: "summary", label: "สรุปยอด", icon: BarChart3 },
+  { id: "reconcile", label: "กระทบยอด", icon: Scale },
 ] as const;
 
 function Index() {
