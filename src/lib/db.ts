@@ -61,9 +61,9 @@ export const monthLabel = (k: string) => {
   const [y = 2000, m = 1] = k.split("-").map(Number);
   return new Date(y, m - 1, 1).toLocaleDateString("th-TH", { month: "long", year: "numeric" });
 };
-// ราคาพิเศษ: price คือยอดรวมของรายการนั้นเลย ไม่คูณจำนวน
+// ราคาพิเศษ/กำหนดเอง: price คือยอดรวมของรายการนั้นเลย ไม่คูณจำนวน
 export const lineTotal = (i: { qty: number; price: number; price_type: string }) =>
-  i.price_type === "special" ? Number(i.price) : Number(i.qty) * Number(i.price);
+  i.price_type === "special" || i.price_type === "custom" ? Number(i.price) : Number(i.qty) * Number(i.price);
 export const txnTotal = (t: Txn) => t.transaction_items.reduce((s, i) => s + lineTotal(i), 0);
 
 export function shareToLine(title: string, txns: Txn[], partyName: (t: Txn) => string) {
