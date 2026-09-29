@@ -46,7 +46,7 @@ export function TxnCard({ t }: { t: Txn }) {
       <div className="mt-3 space-y-1 text-sm">
         {t.transaction_items.map((i) => (
           <div key={i.id} className="flex justify-between gap-2">
-            <span>{i.product_name} <span className="text-muted-foreground">× {num(Number(i.qty))} {i.unit_name}{i.price_type === "special" ? " (ราคาพิเศษ)" : ` @ ${baht(Number(i.price))}`}</span>{i.note && <span className="text-xs text-muted-foreground"> ({i.note})</span>}</span>
+            <span>{i.product_name} <span className="text-muted-foreground">× {num(Number(i.qty))} {i.unit_name}{i.price_type === "special" ? " (ราคาพิเศษ)" : ` @ ${baht(Number(i.price))}${i.price_type === "custom" ? " (กำหนดเอง)" : ""}`}</span>{i.note && <span className="text-xs text-muted-foreground"> ({i.note})</span>}</span>
             <span className="shrink-0">{baht(lineTotal(i))}</span>
           </div>
         ))}
