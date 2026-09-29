@@ -46,7 +46,7 @@ export function TxnCard({ t }: { t: Txn }) {
       <div className="mt-3 space-y-1 text-sm">
         {t.transaction_items.map((i) => (
           <div key={i.id} className="flex justify-between gap-2">
-            <span>{i.product_name} <span className="text-muted-foreground">× {num(Number(i.qty))} {i.unit_name}{i.price_type === "special" ? " (ราคาพิเศษ)" : ` @ ${baht(Number(i.price))}`}</span>{i.note && <span className="text-xs text-muted-foreground"> ({i.note})</span>}</span>
+            <span>{i.product_name} <span className="text-muted-foreground">× {num(Number(i.qty))} {i.unit_name}{i.price_type === "special" ? " (ราคาพิเศษ)" : ` @ ${baht(Number(i.price))}${i.price_type === "custom" ? " (กำหนดเอง)" : ""}`}</span>{i.note && <span className="text-xs text-muted-foreground"> ({i.note})</span>}</span>
             <span className="shrink-0">{baht(lineTotal(i))}</span>
           </div>
         ))}
@@ -89,9 +89,9 @@ export function RecordsTab() {
   const update = (patch: Partial<typeof pick>) => {
     const n = { ...pick, ...patch };
     if (patch.product_id) n.unit_name = unitOpts(patch.product_id)[0]?.unit_name ?? "";
-    if (patch.price_type === "special" || (n.price_type === "special" && !patch.price_type)) {
-      // ราคาพิเศษ: ไม่คำนวณอัตโนมัติ ให้กรอกปริมาณและยอดราคาเอง
-      if (patch.price_type === "special") n.price = "";
+    if (patch.price_type === "special" || patch.price_type === "custom" || ((n.price_type === "special" || n.price_type === "custom") && !patch.price_type)) {
+      // ราคาพิเศษ/กำหนดเอง: ไม่คำนวณอัตโนมัติ ให้กรอกราคาเอง
+      if (patch.price_type === "special" || patch.price_type === "custom") n.price = "";
     } else if (patch.product_id || patch.unit_name || patch.price_type) {
       n.price = String(priceFor(n.product_id, n.unit_name, n.price_type));
     }
@@ -170,9 +170,10 @@ export function RecordsTab() {
             <option value="retail">ราคาปลีก</option>
             <option value="wholesale">ราคาส่ง</option>
             {hasSpecial && <option value="special">ราคาพิเศษ</option>}
+            <option value="custom">กำหนดราคาเอง</option>
           </select>
           <Input type="number" placeholder="จำนวน" value={pick.qty} onChange={(e) => setPick({ ...pick, qty: e.target.value })} />
-          <Input type="number" placeholder={pick.price_type === "special" ? "ยอดรวม (บาท)" : "ราคา"} value={pick.price} onChange={(e) => setPick({ ...pick, price: e.target.value })} />
+          <Input type="number" placeholder={pick.price_type === "special" ? "ยอดรวม (บาท)" : pick.price_type === "custom" ? "ราคาต่อหน่วย (กำหนดเอง)" : "ราคา"} value={pick.price} onChange={(e) => setPick({ ...pick, price: e.target.value })} />
           <Input className="col-span-2 sm:col-span-5" placeholder="หมายเหตุรายการ (ถ้ามี)" value={pick.note} onChange={(e) => setPick({ ...pick, note: e.target.value })} />
           <Button variant="secondary" onClick={addLine}><Plus className="h-4 w-4" />เพิ่ม</Button>
         </div>
