@@ -25,7 +25,7 @@ export function PartiesTab() {
   if (sel) return <PartyDetail sel={sel} onBack={() => setSel(null)} />;
 
   const totalOf = (kind: string, id: string) =>
-    txns.filter((t) => (kind === "branch" ? t.branch_id : t.customer_id) === id).reduce((s, t) => s + txnTotal(t), 0);
+    txns.filter((t) => t.kind !== "branch_sale" && (kind === "branch" ? t.branch_id : t.customer_id) === id).reduce((s, t) => s + txnTotal(t), 0);
 
   const addBranch = async () => {
     if (!bn.trim()) return;

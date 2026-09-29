@@ -19,7 +19,9 @@ export function usePartyName() {
   const { data: branches = [] } = useTable<Branch>("branches");
   const { data: customers = [] } = useTable<Customer>("customers");
   return (t: Txn) =>
-    t.kind === "branch"
+    t.kind === "branch_sale"
+      ? "ขายหน้าร้าน สาขา " + (branches.find((b) => b.id === t.branch_id)?.name ?? "-")
+      : t.kind === "branch"
       ? "สาขา " + (branches.find((b) => b.id === t.branch_id)?.name ?? "-")
       : "ลูกค้า " + (customers.find((c) => c.id === t.customer_id)?.name ?? "-");
 }
@@ -65,7 +67,7 @@ export function RecordsTab() {
   const { data: txns = [] } = useTransactions();
   const inv = useInvalidate();
 
-  const [kind, setKind] = useState<"branch" | "customer">("branch");
+  const [kind, setKind] = useState<"branch" | "customer" | "branch_sale">("branch");
   const [partyId, setPartyId] = useState("");
   const [note, setNote] = useState("");
   const [deduct, setDeduct] = useState(true);
@@ -104,11 +106,11 @@ export function RecordsTab() {
   };
 
   const saveBill = async () => {
-    if (!partyId) return void toast.error(kind === "branch" ? "เลือกสาขา" : "เลือกลูกค้า");
+    if (!partyId) return void toast.error(kind !== "customer" ? "เลือกสาขา" : "เลือกลูกค้า");
     if (!lines.length) return void toast.error("เพิ่มรายการสินค้าก่อน");
     const { data, error } = await supabase.from("transactions").insert({
-      kind, note: note || null, branch_id: kind === "branch" ? partyId : null, customer_id: kind === "customer" ? partyId : null,
-      deduct_stock: kind === "customer" ? deduct : true,
+      kind, note: note || null, branch_id: kind !== "customer" ? partyId : null, customer_id: kind === "customer" ? partyId : null,
+      deduct_stock: kind === "customer" ? deduct : kind === "branch",
     }).select().single();
     if (error || !data) return void toast.error(error?.message ?? "ผิดพลาด");
     const { error: e2 } = await supabase.from("transaction_items").insert(lines.map((l) => ({ ...l, note: l.note || null, transaction_id: data.id })));
@@ -144,16 +146,16 @@ export function RecordsTab() {
       <Card>
         <h2 className="mb-3 font-display text-lg">บันทึกบิลใหม่</h2>
         <div className="mb-3 flex gap-2">
-          {(["branch", "customer"] as const).map((k) => (
-            <button key={k} onClick={() => { setKind(k); setPartyId(""); if (k === "branch" && pick.price_type === "special") update({ price_type: "retail" }); }}
+          {(["branch", "branch_sale", "customer"] as const).map((k) => (
+            <button key={k} onClick={() => { setKind(k); setPartyId(""); if (k !== "customer" && pick.price_type === "special") update({ price_type: "retail" }); }}
               className={`flex-1 rounded-full border py-2 text-sm font-medium transition ${kind === k ? "ig-gradient border-transparent text-primary-foreground" : "hover:bg-muted"}`}>
-              {k === "branch" ? "โอนไปสาขา" : "ขายลูกค้าพิเศษ"}
+              {k === "branch" ? "โอนไปสาขา" : k === "branch_sale" ? "ขายหน้าร้านสาขา" : "ขายลูกค้าพิเศษ"}
             </button>
           ))}
         </div>
         <select className={sel} value={partyId} onChange={(e) => { setPartyId(e.target.value); }}>
-          <option value="">— {kind === "branch" ? "เลือกสาขา" : "เลือกลูกค้า"} —</option>
-          {(kind === "branch" ? branches : customers).map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
+          <option value="">— {kind !== "customer" ? "เลือกสาขา" : "เลือกลูกค้า"} —</option>
+          {(kind !== "customer" ? branches : customers).map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
         </select>
 
         <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-6">
@@ -187,6 +189,7 @@ export function RecordsTab() {
           </div>
         )}
         <Input className="mt-3" placeholder="หมายเหตุบิล" value={note} onChange={(e) => setNote(e.target.value)} />
+        {kind === "branch_sale" && <p className="mt-3 rounded-xl bg-muted/50 p-3 text-xs text-muted-foreground">ขายหน้าร้านสาขา: ไม่ตัดสต๊อกคลังใหญ่ แต่หักจากสต๊อกที่โอนไปสาขานั้น (ดูที่แท็บกระทบยอด)</p>}
         {kind === "customer" && (
           <label className="mt-3 flex cursor-pointer items-start gap-2 rounded-xl border p-3 text-sm">
             <input type="checkbox" className="mt-0.5 h-4 w-4 accent-pink-600" checked={deduct} onChange={(e) => setDeduct(e.target.checked)} />

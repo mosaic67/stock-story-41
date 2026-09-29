@@ -1,9 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Package, ClipboardList, Store, BarChart3 } from "lucide-react";
+import { Package, ClipboardList, Store, BarChart3, Scale } from "lucide-react";
 import { ProductsTab } from "@/components/ProductsTab";
 import { RecordsTab } from "@/components/RecordsTab";
 import { PartiesTab } from "@/components/PartiesTab";
+import { ReconcileTab } from "@/components/ReconcileTab";
 import { SummaryTab } from "@/components/SummaryTab";
 
 export const Route = createFileRoute("/")({
@@ -23,6 +24,7 @@ const TABS = [
   { id: "records", label: "บันทึกรายการ", icon: ClipboardList },
   { id: "parties", label: "สาขา", icon: Store },
   { id: "summary", label: "สรุปยอด", icon: BarChart3 },
+  { id: "reconcile", label: "กระทบยอด", icon: Scale },
 ] as const;
 
 function Index() {
@@ -47,6 +49,7 @@ function Index() {
         {tab === "records" && <RecordsTab />}
         {tab === "parties" && <PartiesTab />}
         {tab === "summary" && <SummaryTab />}
+        {tab === "reconcile" && <ReconcileTab />}
       </main>
     </div>
   );

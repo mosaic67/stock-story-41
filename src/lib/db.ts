@@ -84,3 +84,14 @@ export function shareToLine(title: string, txns: Txn[], partyName: (t: Txn) => s
   const text = lines.join("\n");
   window.open(`https://line.me/R/share?text=${encodeURIComponent(text)}`, "_blank");
 }
+
+// แปลงจำนวนเป็นหน่วยหลักของสินค้า (รองรับ กรัม/ขีด/กิโล)
+const WEIGHT: Record<string, number> = { "กรัม": 1, "ก.": 1, g: 1, "ขีด": 100, "กิโล": 1000, "กิโลกรัม": 1000, "กก.": 1000, kg: 1000 };
+export function baseQty(p: Product | undefined, units: ProductUnit[], unit: string, qty: number) {
+  if (!p) return qty;
+  if (unit === p.unit) return qty;
+  const a = WEIGHT[unit], b = WEIGHT[p.unit];
+  if (a && b) return (qty * a) / b;
+  const u = units.find((x) => x.product_id === p.id && x.unit_name === unit);
+  return qty / (Number(u?.qty_per) || 1);
+}
