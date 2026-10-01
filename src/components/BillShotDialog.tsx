@@ -37,13 +37,13 @@ export function BillShotDialog({ t, partyName, onClose }: { t: Txn; partyName: s
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
       <div className="max-h-full w-full max-w-md space-y-3 overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-        <div ref={cardRef} className="rounded-2xl border bg-card p-5 shadow-lg">
+        <div ref={cardRef} className="receipt-light rounded-2xl border bg-card p-5 shadow-lg">
           <div className="text-center">
             <p className="ig-text font-display text-xl">OBWangnoi OG</p>
             <p className="mt-0.5 text-sm font-semibold">{partyName}</p>
             <p className="text-xs text-muted-foreground">{fmtDateTime(t.created_at)}</p>
             {t.deduct_stock === false && (
-              <span className="mt-1 inline-block rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-700">ไม่หักสต๊อก</span>
+              <span className="mt-1 inline-block rounded-full bg-warn px-2 py-0.5 text-[10px] font-medium text-warn-foreground">ไม่หักสต๊อก</span>
             )}
           </div>
           <div className="my-3 border-t border-dashed" />
@@ -52,7 +52,7 @@ export function BillShotDialog({ t, partyName, onClose }: { t: Txn; partyName: s
               <div key={i.id} className="flex justify-between gap-2">
                 <span>
                   {i.product_name} {num(Number(i.qty))} {i.unit_name}
-                  {i.price_type === "special" ? " (ราคาพิเศษ)" : ` x ${baht(Number(i.price))}`}
+                  {i.price_type === "special" ? " (ราคาพิเศษ)" : i.price_type === "custom" ? " (กำหนดราคาเอง)" : ` x ${baht(Number(i.price))}`}
                   {i.note ? ` (${i.note})` : ""}
                 </span>
                 <span className="shrink-0">{baht(lineTotal(i))}</span>
@@ -70,7 +70,7 @@ export function BillShotDialog({ t, partyName, onClose }: { t: Txn; partyName: s
           <Button variant="secondary" className="flex-1" onClick={onClose}>
             <X className="h-4 w-4" />ปิด
           </Button>
-          <Button className="ig-gradient flex-1 border-0 text-primary-foreground" disabled={busy} onClick={capture}>
+          <Button className="ig-gradient flex-1 border-0 text-on-gradient" disabled={busy} onClick={capture}>
             {busy ? "กำลังแคป..." : <><Share2 className="h-4 w-4" />แคป & ส่ง</>}
           </Button>
         </div>

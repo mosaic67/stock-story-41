@@ -37,7 +37,7 @@ export function TxnCard({ t }: { t: Txn }) {
         <div className="min-w-0 flex-1">
           <p className="font-semibold">{party(t)}</p>
           <p className="text-xs text-muted-foreground">{fmtDateTime(t.created_at)}</p>
-          {t.deduct_stock === false && <span className="mt-1 inline-block rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-700">ไม่หักสต๊อก</span>}
+          {t.deduct_stock === false && <span className="mt-1 inline-block rounded-full bg-warn px-2 py-0.5 text-[10px] font-medium text-warn-foreground">ไม่หักสต๊อก</span>}
         </div>
         <button className="rounded-full p-2 text-muted-foreground hover:bg-muted" aria-label="ขยายบิลเพื่อแคปภาพ" onClick={() => setZoom(true)}><Camera className="h-4 w-4" /></button>
         <button className="rounded-full p-2 text-muted-foreground hover:bg-muted" aria-label="แชร์ไลน์" onClick={() => shareToLine("OBWangnoi OG — บิล", [t], party)}><Send className="h-4 w-4" /></button>
@@ -148,7 +148,7 @@ export function RecordsTab() {
         <div className="mb-3 flex gap-2">
           {(["branch", "branch_sale", "customer"] as const).map((k) => (
             <button key={k} onClick={() => { setKind(k); setPartyId(""); if (k !== "customer" && pick.price_type === "special") update({ price_type: "retail" }); }}
-              className={`flex-1 rounded-full border py-2 text-sm font-medium transition ${kind === k ? "ig-gradient border-transparent text-primary-foreground" : "hover:bg-muted"}`}>
+              className={`flex-1 rounded-full border py-2 text-sm font-medium transition ${kind === k ? "ig-gradient border-transparent text-on-gradient" : "hover:bg-muted"}`}>
               {k === "branch" ? "โอนไปสาขา" : k === "branch_sale" ? "ขายหน้าร้านสาขา" : "ขายลูกค้าพิเศษ"}
             </button>
           ))}
@@ -200,7 +200,7 @@ export function RecordsTab() {
             </span>
           </label>
         )}
-        <Button className="ig-gradient mt-3 w-full border-0 text-primary-foreground" onClick={saveBill}>บันทึกบิล</Button>
+        <Button className="ig-gradient mt-3 w-full border-0 text-on-gradient" onClick={saveBill}>บันทึกบิล</Button>
       </Card>
 
       {months.length > 0 && (

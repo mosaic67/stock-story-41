@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
-import { Camera, ChevronDown, ChevronUp } from "lucide-react";
+import { Camera, ChevronDown, ChevronUp, Send } from "lucide-react";
+import { SummaryShotDialog } from "./SummaryShotDialog";
 import { BillShotDialog } from "./BillShotDialog";
-import { useTable, useTransactions, baht, num, fmtDateTime, monthKey, monthLabel, txnTotal, lineTotal, type Branch, type Customer, type Txn } from "@/lib/db";
+import { useTable, useTransactions, baht, num, fmtDateTime, monthKey, monthLabel, txnTotal, lineTotal, shareToLine, type Branch, type Customer, type Txn } from "@/lib/db";
 import { Card } from "./ConfirmDelete";
 
 export function SummaryTab() {
@@ -14,6 +15,8 @@ export function SummaryTab() {
   const list = month === "all" ? base : base.filter((t) => monthKey(t.created_at) === month);
 
   const [open, setOpen] = useState<string | null>(null);
+  const [shot, setShot] = useState<{ name: string; txns: Txn[] } | null>(null);
+  const period = month === "all" ? "ทุกเดือน" : monthLabel(month);
 
   const agg = (kind: "branch" | "customer") => {
     const src = kind === "branch" ? branches : customers;
@@ -35,7 +38,7 @@ export function SummaryTab() {
     return (
     <div className="rounded-lg border bg-muted/40 p-3 text-sm">
       <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
-        <span className="flex items-center gap-1.5">{fmtDateTime(t.created_at)}{t.deduct_stock === false && <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-700">ไม่หักสต๊อก</span>}</span>
+        <span className="flex items-center gap-1.5">{fmtDateTime(t.created_at)}{t.deduct_stock === false && <span className="rounded-full bg-warn px-1.5 py-0.5 text-[10px] font-medium text-warn-foreground">ไม่หักสต๊อก</span>}</span>
         <span className="flex items-center gap-1">
           <button onClick={() => setZoom(true)} className="rounded-full p-1 hover:bg-muted" aria-label="ขยายบิลเพื่อแคปภาพ"><Camera className="h-3.5 w-3.5" /></button>
           <span className="font-semibold text-foreground">{baht(txnTotal(t))}</span>
@@ -44,7 +47,7 @@ export function SummaryTab() {
       <div className="mt-1.5 space-y-0.5">
         {t.transaction_items.map((i) => (
           <div key={i.id} className="flex justify-between gap-2 text-xs">
-            <span>• {i.product_name} {num(Number(i.qty))} {i.unit_name}{i.price_type === "special" ? " (ราคาพิเศษ)" : ` x ${baht(Number(i.price))}`}{i.note ? ` (${i.note})` : ""}</span>
+            <span>• {i.product_name} {num(Number(i.qty))} {i.unit_name}{i.price_type === "special" ? " (ราคาพิเศษ)" : i.price_type === "custom" ? " (กำหนดราคาเอง)" : ` x ${baht(Number(i.price))}`}{i.note ? ` (${i.note})` : ""}</span>
             <span className="shrink-0">{baht(lineTotal(i))}</span>
           </div>
         ))}
@@ -73,15 +76,23 @@ export function SummaryTab() {
                 <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted"><div className="ig-gradient h-full rounded-full" style={{ width: `${total ? (r.total / total) * 100 : 0}%` }} /></div>
                 <p className="mt-0.5 text-xs text-muted-foreground">{r.bills} บิล · {r.qty.toLocaleString("th-TH")} หน่วย</p>
                 {r.noDeduct.length > 0 && (
-                  <p className="mt-0.5 text-xs text-amber-700">ไม่หักสต๊อก: {r.noDeduct.length} บิล · {baht(r.noDeductTotal)}</p>
+                  <p className="mt-0.5 text-xs text-warn-foreground">ไม่หักสต๊อก: {r.noDeduct.length} บิล · {baht(r.noDeductTotal)}</p>
                 )}
               </button>
               {isOpen && (
                 <div className="mt-2 space-y-2">
                   {r.txns.length === 0 && <p className="text-xs text-muted-foreground">ไม่มีบิลในช่วงนี้</p>}
+                  {r.txns.length > 0 && (
+                    <div className="flex gap-2">
+                      <button onClick={() => shareToLine(`OBWangnoi OG — ${prefix === "b" ? "สาขา" : "ลูกค้า"} ${r.name} (${period})`, [...r.txns].sort((a, b) => a.created_at.localeCompare(b.created_at)), () => r.name)}
+                        className="flex flex-1 items-center justify-center gap-1.5 rounded-full border py-2 text-xs font-semibold hover:bg-muted"><Send className="h-3.5 w-3.5" />แชร์ไลน์ทุกบิล</button>
+                      <button onClick={() => setShot({ name: r.name, txns: r.txns })}
+                        className="ig-gradient flex flex-1 items-center justify-center gap-1.5 rounded-full py-2 text-xs font-semibold text-on-gradient"><Camera className="h-3.5 w-3.5" />แคปรูปสรุปรวม</button>
+                    </div>
+                  )}
                   {r.noDeduct.length > 0 && (
-                    <div className="rounded-lg border border-amber-200 bg-amber-50 p-2.5">
-                      <div className="mb-1.5 flex items-baseline justify-between text-xs font-semibold text-amber-800">
+                    <div className="rounded-lg border border-warn-border bg-warn p-2.5">
+                      <div className="mb-1.5 flex items-baseline justify-between text-xs font-semibold text-warn-foreground">
                         <span>บิลไม่หักสต๊อก ({r.noDeduct.length} บิล)</span>
                         <span>{baht(r.noDeductTotal)}</span>
                       </div>
@@ -115,6 +126,7 @@ export function SummaryTab() {
       </div>
       <Table title="รายสาขา" rows={bRows} total={bTot} prefix="b" />
       <Table title="รายลูกค้า" rows={cRows} total={cTot} prefix="c" />
+      {shot && <SummaryShotDialog txns={shot.txns} partyName={shot.name} period={period} onClose={() => setShot(null)} />}
     </div>
   );
 }
