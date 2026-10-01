@@ -53,7 +53,7 @@ function Index() {
             {TABS.map(({ id, label, icon: Icon }) => (
               <button key={id} onClick={() => setTab(id)}
                 className={`flex flex-1 items-center justify-center gap-1.5 border-t-2 py-2.5 text-xs font-semibold tracking-wide transition sm:text-sm ${tab === id ? "border-foreground text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}>
-                <Icon className="h-4 w-4" /><span>{label}</span>
+                <Icon className="hidden h-4 w-4 sm:block" /><span className="whitespace-nowrap">{label}</span>
               </button>
             ))}
           </nav>
