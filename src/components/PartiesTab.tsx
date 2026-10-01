@@ -57,7 +57,7 @@ export function PartiesTab() {
     <div className="space-y-4">
       <Card>
         <h2 className="mb-2 font-display text-lg">สาขา</h2>
-        <div className="flex gap-2"><Input placeholder="ชื่อสาขาใหม่" value={bn} onChange={(e) => setBn(e.target.value)} /><Button onClick={addBranch} variant="secondary"><Plus className="h-4 w-4" /></Button></div>
+        <div data-edit className="flex gap-2"><Input placeholder="ชื่อสาขาใหม่" value={bn} onChange={(e) => setBn(e.target.value)} /><Button onClick={addBranch} variant="secondary"><Plus className="h-4 w-4" /></Button></div>
         <div className="mt-2 divide-y">{branches.map((b) => <Row key={b.id} kind="branch" id={b.id} name={b.name} />)}</div>
       </Card>
       <Card>
@@ -117,7 +117,7 @@ function SpecialPrices({ customerId }: { customerId: string }) {
   return (
     <Card>
       <h3 className="mb-2 font-display">ราคาพิเศษของลูกค้านี้</h3>
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+      <div data-edit className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         <select className={`${sel} col-span-2 sm:col-span-1`} value={f.product_id} onChange={(e) => setF({ product_id: e.target.value, unit_name: unitNames(e.target.value)[0] ?? "", price: f.price })}>
           <option value="">— สินค้า —</option>
           {products.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}

@@ -143,7 +143,7 @@ export function RecordsTab() {
 
   return (
     <div className="space-y-4">
-      <Card>
+      <Card data-edit>
         <h2 className="mb-3 font-display text-lg">บันทึกบิลใหม่</h2>
         <div className="mb-3 flex gap-2">
           {(["branch", "branch_sale", "customer"] as const).map((k) => (

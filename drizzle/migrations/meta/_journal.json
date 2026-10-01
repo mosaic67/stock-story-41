@@ -15,6 +15,13 @@
       "when": 1790476859232,
       "tag": "0001_product_stock",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790854428022,
+      "tag": "0002_auth_roles_audit",
+      "breakpoints": true
     }
   ]
 }

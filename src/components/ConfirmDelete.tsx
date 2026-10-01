@@ -8,7 +8,7 @@ export function ConfirmDelete({ label, onConfirm }: { label: string; onConfirm: 
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <button className="rounded-full p-2 text-muted-foreground transition hover:bg-destructive/10 hover:text-destructive" aria-label="ลบ">
+        <button data-edit className="rounded-full p-2 text-muted-foreground transition hover:bg-destructive/10 hover:text-destructive" aria-label="ลบ">
           <Trash2 className="h-4 w-4" />
         </button>
       </AlertDialogTrigger>
@@ -28,6 +28,6 @@ export function ConfirmDelete({ label, onConfirm }: { label: string; onConfirm: 
   );
 }
 
-export function Card({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  return <div className={`rounded-2xl border bg-card p-4 ${className}`}>{children}</div>;
+export function Card({ children, className = "", ...rest }: { children: React.ReactNode; className?: string; "data-edit"?: boolean }) {
+  return <div {...rest} className={`rounded-2xl border bg-card p-4 ${className}`}>{children}</div>;
 }

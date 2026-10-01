@@ -235,3 +235,4 @@
   --color-warn-border: var(--warn-border);
   --color-on-gradient: var(--on-gradient);
 }
+.ro [data-edit]{display:none!important}
