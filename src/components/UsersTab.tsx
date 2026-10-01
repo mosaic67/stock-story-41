@@ -89,8 +89,8 @@ function Log() {
   });
   const desc = (r: { row_data: unknown }) => {
     const d = (r.row_data ?? {}) as Record<string, any>;
-    const x = d.new ?? d;
-    return x.name ?? x.product_name ?? x.username ?? x.unit_name ?? x.code ?? x.kind ?? "";
+    const x = (d["new"] ?? d) as Record<string, any>;
+    return x["name"] ?? x["product_name"] ?? x["username"] ?? x["unit_name"] ?? x["code"] ?? x["kind"] ?? "";
   };
   return (
     <Card className="divide-y p-0">
