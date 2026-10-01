@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { Package, ClipboardList, Store, BarChart3, Scale } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Package, ClipboardList, Store, BarChart3, Scale, Moon, Sun } from "lucide-react";
 import { ProductsTab } from "@/components/ProductsTab";
 import { RecordsTab } from "@/components/RecordsTab";
 import { PartiesTab } from "@/components/PartiesTab";
@@ -21,19 +21,34 @@ export const Route = createFileRoute("/")({
 
 const TABS = [
   { id: "products", label: "สินค้า", icon: Package },
-  { id: "records", label: "บันทึกรายการ", icon: ClipboardList },
-  { id: "parties", label: "สาขา", icon: Store },
+  { id: "records", label: "บันทึก", icon: ClipboardList },
+  { id: "parties", label: "คู่ค้า", icon: Store },
   { id: "summary", label: "สรุปยอด", icon: BarChart3 },
   { id: "reconcile", label: "กระทบยอด", icon: Scale },
 ] as const;
 
 function Index() {
   const [tab, setTab] = useState<(typeof TABS)[number]["id"]>("products");
+  const [dark, setDark] = useState(false);
+  useEffect(() => setDark(document.documentElement.classList.contains("dark")), []);
+  const toggleTheme = () => {
+    const next = !dark;
+    setDark(next);
+    document.documentElement.classList.toggle("dark", next);
+    try { localStorage.setItem("theme", next ? "dark" : "light"); } catch { /* ignore */ }
+    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", next ? "#000000" : "#d62976");
+  };
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-20 border-b bg-card/90 backdrop-blur">
         <div className="mx-auto max-w-2xl px-4">
-          <h1 className="py-3 text-center font-logo text-3xl">OBWangnoi <span className="ig-text">OG</span></h1>
+          <div className="relative">
+            <h1 className="py-3 text-center font-logo text-3xl">OBWangnoi <span className="ig-text">OG</span></h1>
+            <button onClick={toggleTheme} aria-label={dark ? "เปลี่ยนเป็นโหมดสว่าง" : "เปลี่ยนเป็นโหมดมืด"}
+              className="absolute right-0 top-1/2 -translate-y-1/2 rounded-full border p-2 text-foreground hover:bg-muted">
+              {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </button>
+          </div>
           <nav className="flex">
             {TABS.map(({ id, label, icon: Icon }) => (
               <button key={id} onClick={() => setTab(id)}
