@@ -51,7 +51,7 @@ export function ProductsTab() {
           <Input placeholder="ราคาขาย" type="number" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} />
         </div>
         <div className="mt-3 flex gap-2">
-          <Button onClick={save} className="ig-gradient border-0 text-primary-foreground"><Plus className="h-4 w-4" />{editing ? "บันทึก" : "เพิ่มสินค้า"}</Button>
+          <Button onClick={save} className="ig-gradient border-0 text-on-gradient"><Plus className="h-4 w-4" />{editing ? "บันทึก" : "เพิ่มสินค้า"}</Button>
           {editing && <Button variant="ghost" onClick={() => { setEditing(null); setForm({ code: "", name: "", unit: "", price: "" }); }}>ยกเลิก</Button>}
         </div>
       </Card>

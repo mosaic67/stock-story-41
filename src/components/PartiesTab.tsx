@@ -101,7 +101,7 @@ function PartyDetail({ sel, onBack }: { sel: NonNullable<Sel>; onBack: () => voi
           <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
           <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
         </div>
-        <Button className="ig-gradient mt-3 w-full border-0 text-primary-foreground" disabled={!list.length}
+        <Button className="ig-gradient mt-3 w-full border-0 text-on-gradient" disabled={!list.length}
           onClick={() => shareToLine(`OBWangnoi OG — ${sel.kind === "branch" ? "สาขา" : "ลูกค้า"} ${sel.name}`, [...list].reverse(), party)}>
           <Send className="h-4 w-4" />แชร์ไปไลน์
         </Button>

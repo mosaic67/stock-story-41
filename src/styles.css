@@ -184,3 +184,54 @@
     font-family: var(--font-sans);
   }
 }
+
+:root {
+  --warn: oklch(0.96 0.05 85);
+  --warn-foreground: oklch(0.45 0.12 65);
+  --warn-border: oklch(0.88 0.09 85);
+  --on-gradient: oklch(1 0 0);
+}
+
+/* โหมดมืด — พื้นดำสนิทประหยัดแบตจอ OLED, ตัวอักษรคอนทราสต์สูง */
+.dark {
+  --background: oklch(0 0 0);
+  --foreground: oklch(0.96 0 0);
+  --card: oklch(0.17 0 0);
+  --card-foreground: oklch(0.96 0 0);
+  --popover: oklch(0.2 0 0);
+  --popover-foreground: oklch(0.96 0 0);
+  --muted: oklch(0.24 0 0);
+  --muted-foreground: oklch(0.74 0 0);
+  --secondary: oklch(0.26 0 0);
+  --secondary-foreground: oklch(0.96 0 0);
+  --accent: oklch(0.26 0 0);
+  --accent-foreground: oklch(0.96 0 0);
+  --primary: oklch(0.96 0 0);
+  --primary-foreground: oklch(0.12 0 0);
+  --border: oklch(0.3 0 0);
+  --input: oklch(0.36 0 0);
+  --warn: oklch(0.3 0.06 75);
+  --warn-foreground: oklch(0.88 0.12 85);
+  --warn-border: oklch(0.45 0.09 75);
+  color-scheme: dark;
+}
+
+/* ใบเสร็จสำหรับแคปภาพ: บังคับโทนสว่างเสมอ */
+.receipt-light {
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.18 0 0);
+  --foreground: oklch(0.18 0 0);
+  --muted-foreground: oklch(0.45 0 0);
+  --border: oklch(0.88 0 0);
+  --warn: oklch(0.96 0.05 85);
+  --warn-foreground: oklch(0.45 0.12 65);
+  --warn-border: oklch(0.88 0.09 85);
+  color: var(--foreground);
+}
+
+@theme inline {
+  --color-warn: var(--warn);
+  --color-warn-foreground: var(--warn-foreground);
+  --color-warn-border: var(--warn-border);
+  --color-on-gradient: var(--on-gradient);
+}
