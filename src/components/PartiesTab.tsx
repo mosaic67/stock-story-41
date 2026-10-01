@@ -75,17 +75,7 @@ export function PartiesTab() {
 
 function PartyDetail({ sel, onBack }: { sel: NonNullable<Sel>; onBack: () => void }) {
   const { data: txns = [] } = useTransactions();
-  const party = usePartyName();
-  const [from, setFrom] = useState("");
-  const [to, setTo] = useState("");
-  const list = txns.filter((t) => {
-    if ((sel.kind === "branch" ? t.branch_id : t.customer_id) !== sel.id) return false;
-    const d = t.created_at.slice(0, 10);
-    return (!from || d >= from) && (!to || d <= to);
-  });
-  const byMonth = new Map<string, number>();
-  list.forEach((t) => byMonth.set(monthKey(t.created_at), (byMonth.get(monthKey(t.created_at)) ?? 0) + txnTotal(t)));
-
+  const list = txns.filter((t) => t.kind !== "branch_sale" && (sel.kind === "branch" ? t.branch_id : t.customer_id) === sel.id);
   return (
     <div className="space-y-4">
       <button onClick={onBack} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"><ChevronLeft className="h-4 w-4" />กลับ</button>
@@ -97,23 +87,9 @@ function PartyDetail({ sel, onBack }: { sel: NonNullable<Sel>; onBack: () => voi
             <div className="mt-1 flex gap-5 text-sm"><span><b>{list.length}</b> บิล</span><span><b>{baht(list.reduce((s, t) => s + txnTotal(t), 0))}</b> ยอดรวม</span></div>
           </div>
         </div>
-        <div className="mt-3 grid grid-cols-2 gap-2">
-          <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
-          <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
-        </div>
-        <Button className="ig-gradient mt-3 w-full border-0 text-on-gradient" disabled={!list.length}
-          onClick={() => shareToLine(`OBWangnoi OG — ${sel.kind === "branch" ? "สาขา" : "ลูกค้า"} ${sel.name}`, [...list].reverse(), party)}>
-          <Send className="h-4 w-4" />แชร์ไปไลน์
-        </Button>
-        {byMonth.size > 0 && (
-          <div className="mt-3 space-y-1 border-t pt-3 text-sm">
-            {Array.from(byMonth.entries()).map(([m, v]) => <div key={m} className="flex justify-between"><span>{monthLabel(m)}</span><span className="font-medium">{baht(v)}</span></div>)}
-          </div>
-        )}
+        <p className="mt-3 text-xs text-muted-foreground">ดูบิลย้อนหลัง สรุปรายเดือน และแชร์บิล ได้ที่แท็บ "สรุปยอด"</p>
       </Card>
       {sel.kind === "customer" && <SpecialPrices customerId={sel.id} />}
-      {list.map((t) => <TxnCard key={t.id} t={t} />)}
-      {!list.length && <p className="py-6 text-center text-muted-foreground">ไม่มีรายการ</p>}
     </div>
   );
 }
