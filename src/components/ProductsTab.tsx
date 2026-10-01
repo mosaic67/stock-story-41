@@ -40,7 +40,7 @@ export function ProductsTab() {
 
   return (
     <div className="space-y-4">
-      <Card>
+      <Card data-edit>
         <h2 className="mb-3 font-display text-lg">{editing ? "แก้ไขสินค้า" : "เพิ่มสินค้าใหม่"}</h2>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           <div className="flex h-10 items-center rounded-md border bg-muted px-3 text-sm text-muted-foreground">
@@ -68,7 +68,7 @@ export function ProductsTab() {
               <p className="text-xs text-muted-foreground">#{p.code} · {baht(Number(p.price))} / {p.unit}</p>
               <p className={`text-xs font-semibold ${Number(p.stock) <= 0 ? "text-destructive" : "text-foreground"}`}>คงเหลือ {Number(Number(p.stock).toFixed(2)).toLocaleString("th-TH")} {p.unit}</p>
             </div>
-            <button className="rounded-full p-2 text-muted-foreground hover:bg-muted" onClick={() => { setEditing(p.id); setForm({ code: p.code, name: p.name, unit: p.unit, price: String(p.price) }); window.scrollTo({ top: 0, behavior: "smooth" }); }}><Pencil className="h-4 w-4" /></button>
+            <button data-edit className="rounded-full p-2 text-muted-foreground hover:bg-muted" onClick={() => { setEditing(p.id); setForm({ code: p.code, name: p.name, unit: p.unit, price: String(p.price) }); window.scrollTo({ top: 0, behavior: "smooth" }); }}><Pencil className="h-4 w-4" /></button>
             <ConfirmDelete label={p.name} onConfirm={async () => { await supabase.from("products").delete().eq("id", p.id); inv("products", "product_units"); toast.success("ลบแล้ว"); }} />
           </div>
           <StockAdjust product={p} />
@@ -93,7 +93,7 @@ function StockAdjust({ product }: { product: Product }) {
     inv("products");
   };
   return (
-    <div className="mt-3 flex gap-2 border-t pt-3">
+    <div data-edit className="mt-3 flex gap-2 border-t pt-3">
       <Input placeholder={`จำนวน (${product.unit})`} type="number" value={v} onChange={(e) => setV(e.target.value)} className="h-9" />
       <Button size="sm" variant="secondary" onClick={() => apply("add")}>+ รับเข้า</Button>
       <Button size="sm" variant="outline" onClick={() => apply("set")}>ตั้งยอด</Button>
@@ -128,7 +128,7 @@ function SubUnits({ product, units }: { product: Product; units: ProductUnit[] }
             <ConfirmDelete label={`หน่วย ${u.unit_name}`} onConfirm={async () => { await supabase.from("product_units").delete().eq("id", u.id); inv("product_units"); }} />
           </div>
         ))}
-        <button onClick={() => setOpen(!open)} className="flex items-center gap-1 rounded-full border border-dashed px-3 py-1 text-xs text-muted-foreground hover:text-foreground">
+        <button data-edit onClick={() => setOpen(!open)} className="flex items-center gap-1 rounded-full border border-dashed px-3 py-1 text-xs text-muted-foreground hover:text-foreground">
           {open ? <X className="h-3 w-3" /> : <Plus className="h-3 w-3" />} หน่วยย่อย / ราคาปลีก-ส่ง
         </button>
       </div>

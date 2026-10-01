@@ -55,12 +55,12 @@ export function PartiesTab() {
 
   return (
     <div className="space-y-4">
-      <Card>
+      <Card data-edit>
         <h2 className="mb-2 font-display text-lg">สาขา</h2>
         <div className="flex gap-2"><Input placeholder="ชื่อสาขาใหม่" value={bn} onChange={(e) => setBn(e.target.value)} /><Button onClick={addBranch} variant="secondary"><Plus className="h-4 w-4" /></Button></div>
         <div className="mt-2 divide-y">{branches.map((b) => <Row key={b.id} kind="branch" id={b.id} name={b.name} />)}</div>
       </Card>
-      <Card>
+      <Card data-edit>
         <h2 className="mb-2 font-display text-lg">ลูกค้าพิเศษ</h2>
         <div className="flex gap-2">
           <Input placeholder="ชื่อลูกค้า" value={cn.name} onChange={(e) => setCn({ ...cn, name: e.target.value })} />
