@@ -52,7 +52,7 @@ export function BillShotDialog({ t, partyName, onClose }: { t: Txn; partyName: s
               <div key={i.id} className="flex justify-between gap-2">
                 <span>
                   {i.product_name} {num(Number(i.qty))} {i.unit_name}
-                  {i.price_type === "special" ? " (ราคาพิเศษ)" : ` x ${baht(Number(i.price))}`}
+                  {i.price_type === "special" ? " (ราคาพิเศษ)" : i.price_type === "custom" ? " (กำหนดราคาเอง)" : ` x ${baht(Number(i.price))}`}
                   {i.note ? ` (${i.note})` : ""}
                 </span>
                 <span className="shrink-0">{baht(lineTotal(i))}</span>
