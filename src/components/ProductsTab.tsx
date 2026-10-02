@@ -58,6 +58,13 @@ export function ProductsTab() {
 
       <Input placeholder="ค้นหาสินค้า..." value={search} onChange={(e) => setSearch(e.target.value)} className="rounded-full bg-muted" />
 
+      <Card>
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-muted-foreground">มูลค่าสต๊อกคงเหลือรวม ({list.length} รายการ)</span>
+          <span className="font-display text-xl font-semibold">{baht(list.reduce((s, p) => s + Math.max(0, Number(p.stock)) * Number(p.price), 0))}</span>
+        </div>
+      </Card>
+
       {list.length === 0 && <p className="py-10 text-center text-muted-foreground">ยังไม่มีสินค้า</p>}
       {list.map((p) => (
         <Card key={p.id}>
@@ -66,7 +73,7 @@ export function ProductsTab() {
             <div className="min-w-0 flex-1">
               <p className="truncate font-semibold">{p.name}</p>
               <p className="text-xs text-muted-foreground">#{p.code} · {baht(Number(p.price))} / {p.unit}</p>
-              <p className={`text-xs font-semibold ${Number(p.stock) <= 0 ? "text-destructive" : "text-foreground"}`}>คงเหลือ {Number(Number(p.stock).toFixed(2)).toLocaleString("th-TH")} {p.unit}</p>
+              <p className={`text-xs font-semibold ${Number(p.stock) <= 0 ? "text-destructive" : "text-foreground"}`}>คงเหลือ {Number(Number(p.stock).toFixed(2)).toLocaleString("th-TH")} {p.unit} · มูลค่า {baht(Math.max(0, Number(p.stock)) * Number(p.price))}</p>
             </div>
             <button data-edit className="rounded-full p-2 text-muted-foreground hover:bg-muted" onClick={() => { setEditing(p.id); setForm({ code: p.code, name: p.name, unit: p.unit, price: String(p.price) }); window.scrollTo({ top: 0, behavior: "smooth" }); }}><Pencil className="h-4 w-4" /></button>
             <ConfirmDelete label={p.name} onConfirm={async () => { await supabase.from("products").delete().eq("id", p.id); inv("products", "product_units"); toast.success("ลบแล้ว"); }} />
