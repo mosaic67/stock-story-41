@@ -8,9 +8,10 @@ export type Branch = Tables<"branches">;
 export type Customer = Tables<"customers">;
 export type CustomerPrice = Tables<"customer_prices">;
 export type Txn = Tables<"transactions"> & { transaction_items: Tables<"transaction_items">[] };
+export type StockCount = Tables<"stock_counts">;
 export type TxnItem = Tables<"transaction_items">;
 
-type TableName = "products" | "product_units" | "branches" | "customers" | "customer_prices";
+type TableName = "products" | "product_units" | "branches" | "customers" | "customer_prices" | "stock_counts";
 
 export function useTable<T>(table: TableName, order = "created_at") {
   return useQuery({
@@ -65,6 +66,8 @@ export const monthLabel = (k: string) => {
 export const lineTotal = (i: { qty: number; price: number; price_type: string }) =>
   i.price_type === "special" || i.price_type === "custom" ? Number(i.price) : Number(i.qty) * Number(i.price);
 export const txnTotal = (t: Txn) => t.transaction_items.reduce((s, i) => s + lineTotal(i), 0);
+
+export const shareText = (text: string) => window.open(`https://line.me/R/share?text=${encodeURIComponent(text)}`, "_blank");
 
 export function shareToLine(title: string, txns: Txn[], partyName: (t: Txn) => string) {
   const lines: string[] = [title, ""];
