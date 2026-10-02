@@ -22,13 +22,6 @@
       "when": 1790854428022,
       "tag": "0002_auth_roles_audit",
       "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1790904909550,
-      "tag": "0003_stock_counts",
-      "breakpoints": true
     }
   ]
 }
