@@ -217,6 +217,41 @@ export type Database = {
         }
         Relationships: []
       }
+      stock_counts: {
+        Row: {
+          actual: number
+          created_at: string
+          expected: number
+          id: string
+          month: string
+          product_id: string
+        }
+        Insert: {
+          actual?: number
+          created_at?: string
+          expected?: number
+          id?: string
+          month: string
+          product_id: string
+        }
+        Update: {
+          actual?: number
+          created_at?: string
+          expected?: number
+          id?: string
+          month?: string
+          product_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_counts_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       transaction_items: {
         Row: {
           id: string
