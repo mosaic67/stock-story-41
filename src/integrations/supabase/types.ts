@@ -217,6 +217,63 @@ export type Database = {
         }
         Relationships: []
       }
+      stock_closings: {
+        Row: {
+          amount: number
+          branch_id: string
+          counted_qty: number
+          created_at: string
+          expected_qty: number
+          id: string
+          month: string
+          product_id: string | null
+          product_name: string
+          sold_qty: number
+          unit: string
+        }
+        Insert: {
+          amount?: number
+          branch_id: string
+          counted_qty?: number
+          created_at?: string
+          expected_qty?: number
+          id?: string
+          month: string
+          product_id?: string | null
+          product_name: string
+          sold_qty?: number
+          unit?: string
+        }
+        Update: {
+          amount?: number
+          branch_id?: string
+          counted_qty?: number
+          created_at?: string
+          expected_qty?: number
+          id?: string
+          month?: string
+          product_id?: string | null
+          product_name?: string
+          sold_qty?: number
+          unit?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_closings_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_closings_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stock_counts: {
         Row: {
           actual: number
