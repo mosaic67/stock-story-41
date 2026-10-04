@@ -11,7 +11,7 @@ export function SummaryTab() {
   const { data: txns = [] } = useTransactions();
   const months = useMemo(() => Array.from(new Set(txns.map((t) => monthKey(t.created_at)))), [txns]);
   const [month, setMonth] = useState("all");
-  const base = txns.filter((t) => t.kind !== "branch_sale");
+  const base = txns.filter((t) => t.kind !== "branch_sale" && t.kind !== "stock_in");
   const list = month === "all" ? base : base.filter((t) => monthKey(t.created_at) === month);
 
   const [open, setOpen] = useState<string | null>(null);
