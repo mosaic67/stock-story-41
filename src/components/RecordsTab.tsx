@@ -19,7 +19,9 @@ export function usePartyName() {
   const { data: branches = [] } = useTable<Branch>("branches");
   const { data: customers = [] } = useTable<Customer>("customers");
   return (t: Txn) =>
-    t.kind === "branch_sale"
+    t.kind === "stock_in"
+      ? "รับเข้าคลังหลัก"
+      : t.kind === "branch_sale"
       ? "ขายหน้าร้าน สาขา " + (branches.find((b) => b.id === t.branch_id)?.name ?? "-")
       : t.kind === "branch"
       ? "สาขา " + (branches.find((b) => b.id === t.branch_id)?.name ?? "-")
@@ -67,7 +69,7 @@ export function RecordsTab() {
   const { data: txns = [] } = useTransactions();
   const inv = useInvalidate();
 
-  const [kind, setKind] = useState<"branch" | "customer" | "branch_sale">("branch");
+  const [kind, setKind] = useState<"branch" | "customer" | "branch_sale" | "stock_in">("branch");
   const [partyId, setPartyId] = useState("");
   const [note, setNote] = useState("");
   const [deduct, setDeduct] = useState(true);
@@ -106,11 +108,11 @@ export function RecordsTab() {
   };
 
   const saveBill = async () => {
-    if (!partyId) return void toast.error(kind !== "customer" ? "เลือกสาขา" : "เลือกลูกค้า");
+    if (!partyId && kind !== "stock_in") return void toast.error(kind !== "customer" ? "เลือกสาขา" : "เลือกลูกค้า");
     if (!lines.length) return void toast.error("เพิ่มรายการสินค้าก่อน");
     const { data, error } = await supabase.from("transactions").insert({
-      kind, note: note || null, branch_id: kind !== "customer" ? partyId : null, customer_id: kind === "customer" ? partyId : null,
-      deduct_stock: kind === "customer" ? deduct : kind === "branch",
+      kind, note: note || null, branch_id: kind === "branch" || kind === "branch_sale" ? partyId : null, customer_id: kind === "customer" ? partyId : null,
+      deduct_stock: kind === "customer" ? deduct : kind === "branch" || kind === "stock_in",
     }).select().single();
     if (error || !data) return void toast.error(error?.message ?? "ผิดพลาด");
     const { error: e2 } = await supabase.from("transaction_items").insert(lines.map((l) => ({ ...l, note: l.note || null, transaction_id: data.id })));
@@ -145,18 +147,18 @@ export function RecordsTab() {
     <div className="space-y-4">
       <Card data-edit>
         <h2 className="mb-3 font-display text-lg">บันทึกบิลใหม่</h2>
-        <div className="mb-3 flex gap-2">
-          {(["branch", "branch_sale", "customer"] as const).map((k) => (
+        <div className="mb-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {(["branch", "branch_sale", "customer", "stock_in"] as const).map((k) => (
             <button key={k} onClick={() => { setKind(k); setPartyId(""); if (k !== "customer" && pick.price_type === "special") update({ price_type: "retail" }); }}
-              className={`flex-1 rounded-full border py-2 text-sm font-medium transition ${kind === k ? "ig-gradient border-transparent text-on-gradient" : "hover:bg-muted"}`}>
-              {k === "branch" ? "โอนไปสาขา" : k === "branch_sale" ? "ขายหน้าร้านสาขา" : "ขายลูกค้าพิเศษ"}
+              className={`rounded-full border py-2 text-sm font-medium transition ${kind === k ? "ig-gradient border-transparent text-on-gradient" : "hover:bg-muted"}`}>
+              {k === "branch" ? "โอนไปสาขา" : k === "branch_sale" ? "ขายหน้าร้านสาขา" : k === "customer" ? "ขายลูกค้าพิเศษ" : "รับสินค้าเข้าคลัง"}
             </button>
           ))}
         </div>
-        <select className={sel} value={partyId} onChange={(e) => { setPartyId(e.target.value); }}>
+        {kind === "stock_in" ? <p className="rounded-xl bg-muted/50 p-3 text-xs text-muted-foreground">รับสินค้าเข้าคลังหลัก: เพิ่มสต๊อกคลังหลักและเก็บเป็นประวัติล็อตนำเข้า (ใส่ราคาทุนในช่องราคาได้ · หมายเหตุบิลใช้ระบุเลขล็อต/ผู้ขาย)</p> : <select className={sel} value={partyId} onChange={(e) => { setPartyId(e.target.value); }}>
           <option value="">— {kind !== "customer" ? "เลือกสาขา" : "เลือกลูกค้า"} —</option>
           {(kind !== "customer" ? branches : customers).map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
-        </select>
+        </select>}
 
         <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-6">
           <select className={`${sel} col-span-2`} value={pick.product_id} onChange={(e) => update({ product_id: e.target.value })}>
