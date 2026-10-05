@@ -369,6 +369,7 @@ export type Database = {
           id: string
           kind: string
           note: string | null
+          to_branch_id: string | null
         }
         Insert: {
           branch_id?: string | null
@@ -378,6 +379,7 @@ export type Database = {
           id?: string
           kind: string
           note?: string | null
+          to_branch_id?: string | null
         }
         Update: {
           branch_id?: string | null
@@ -387,6 +389,7 @@ export type Database = {
           id?: string
           kind?: string
           note?: string | null
+          to_branch_id?: string | null
         }
         Relationships: [
           {
@@ -401,6 +404,13 @@ export type Database = {
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_to_branch_id_fkey"
+            columns: ["to_branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
             referencedColumns: ["id"]
           },
         ]

@@ -1,0 +1,1 @@
+ALTER TABLE public.transactions ADD COLUMN IF NOT EXISTS to_branch_id uuid REFERENCES public.branches(id);

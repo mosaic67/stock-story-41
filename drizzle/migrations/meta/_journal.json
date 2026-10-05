@@ -29,6 +29,13 @@
       "when": 1791097543402,
       "tag": "0003_stock_in_and_closings",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1791164794104,
+      "tag": "0004_branch_move_to_branch",
+      "breakpoints": true
     }
   ]
 }
