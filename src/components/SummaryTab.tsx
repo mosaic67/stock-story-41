@@ -11,7 +11,7 @@ export function SummaryTab() {
   const { data: txns = [] } = useTransactions();
   const months = useMemo(() => Array.from(new Set(txns.map((t) => monthKey(t.created_at)))), [txns]);
   const [month, setMonth] = useState("all");
-  const base = txns.filter((t) => t.kind !== "branch_sale" && t.kind !== "stock_in" && t.kind !== "branch_move");
+  const base = txns.filter((t) => t.kind !== "branch_sale" && t.kind !== "stock_in");
   const list = month === "all" ? base : base.filter((t) => monthKey(t.created_at) === month);
 
   const [open, setOpen] = useState<string | null>(null);
@@ -21,9 +21,11 @@ export function SummaryTab() {
   const agg = (kind: "branch" | "customer") => {
     const src = kind === "branch" ? branches : customers;
     const rows = src.map((p) => {
-      const ts = list.filter((t) => (kind === "branch" ? t.branch_id : t.customer_id) === p.id);
-      const noDeduct = ts.filter((t) => t.deduct_stock === false);
-      return { id: p.id, name: p.name, txns: ts, noDeduct, noDeductTotal: noDeduct.reduce((s, t) => s + txnTotal(t), 0), bills: ts.length, qty: ts.reduce((s, t) => s + t.transaction_items.reduce((a, i) => a + Number(i.qty), 0), 0), total: ts.reduce((s, t) => s + txnTotal(t), 0) };
+      const ts = list.filter((t) => kind === "branch" ? (t.branch_id === p.id || (t.kind === "branch_move" && t.to_branch_id === p.id)) : t.kind !== "branch_move" && t.customer_id === p.id);
+      const sign = (t: Txn) => (t.kind === "branch_move" && t.branch_id === p.id ? -1 : 1);
+      const noDeduct = ts.filter((t) => t.deduct_stock === false && t.kind !== "branch_move");
+      const moves = ts.filter((t) => t.kind === "branch_move");
+      return { id: p.id, name: p.name, txns: ts, noDeduct, moves, moveNet: moves.reduce((s, t) => s + sign(t) * txnTotal(t), 0), noDeductTotal: noDeduct.reduce((s, t) => s + txnTotal(t), 0), bills: ts.length, qty: ts.reduce((s, t) => s + sign(t) * t.transaction_items.reduce((a, i) => a + Number(i.qty), 0), 0), total: ts.reduce((s, t) => s + sign(t) * txnTotal(t), 0) };
     }).sort((a, b) => b.total - a.total);
     return rows;
   };
@@ -31,14 +33,14 @@ export function SummaryTab() {
   const cRows = agg("customer");
   const bTot = bRows.reduce((s, r) => s + r.total, 0);
   const cTot = cRows.reduce((s, r) => s + r.total, 0);
-  const noDeductTot = list.filter((t) => t.deduct_stock === false).reduce((s, t) => s + txnTotal(t), 0);
+  const noDeductTot = list.filter((t) => t.deduct_stock === false && t.kind !== "branch_move").reduce((s, t) => s + txnTotal(t), 0);
 
   const BillDetail = ({ t, partyName }: { t: Txn; partyName: string }) => {
     const [zoom, setZoom] = useState(false);
     return (
     <div className="rounded-lg border bg-muted/40 p-3 text-sm">
       <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
-        <span className="flex items-center gap-1.5">{fmtDateTime(t.created_at)}{t.deduct_stock === false && <span className="rounded-full bg-warn px-1.5 py-0.5 text-[10px] font-medium text-warn-foreground">ไม่หักสต๊อก</span>}</span>
+        <span className="flex items-center gap-1.5">{fmtDateTime(t.created_at)}{t.kind === "branch_move" && <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium">ย้าย {branches.find((b) => b.id === t.branch_id)?.name} → {branches.find((b) => b.id === t.to_branch_id)?.name}</span>}{t.deduct_stock === false && t.kind !== "branch_move" && <span className="rounded-full bg-warn px-1.5 py-0.5 text-[10px] font-medium text-warn-foreground">ไม่หักสต๊อก</span>}</span>
         <span className="flex items-center gap-1">
           <button onClick={() => setZoom(true)} className="rounded-full p-1 hover:bg-muted" aria-label="ขยายบิลเพื่อแคปภาพ"><Camera className="h-3.5 w-3.5" /></button>
           <span className="font-semibold text-foreground">{baht(txnTotal(t))}</span>
@@ -75,6 +77,7 @@ export function SummaryTab() {
                 </div>
                 <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted"><div className="ig-gradient h-full rounded-full" style={{ width: `${total ? (r.total / total) * 100 : 0}%` }} /></div>
                 <p className="mt-0.5 text-xs text-muted-foreground">{r.bills} บิล · {r.qty.toLocaleString("th-TH")} หน่วย</p>
+                {r.moves.length > 0 && <p className="mt-0.5 text-xs text-muted-foreground">โอนระหว่างสาขา: {r.moves.length} บิล · สุทธิ {baht(r.moveNet)}</p>}
                 {r.noDeduct.length > 0 && (
                   <p className="mt-0.5 text-xs text-warn-foreground">ไม่หักสต๊อก: {r.noDeduct.length} บิล · {baht(r.noDeductTotal)}</p>
                 )}
@@ -102,7 +105,7 @@ export function SummaryTab() {
                   {r.noDeduct.length > 0 && r.txns.length > r.noDeduct.length && (
                     <p className="text-xs font-semibold text-muted-foreground">บิลหักสต๊อก ({r.txns.length - r.noDeduct.length} บิล) · {baht(r.total - r.noDeductTotal)}</p>
                   )}
-                  {r.txns.filter((t) => t.deduct_stock !== false).map((t) => <BillDetail key={t.id} t={t} partyName={r.name} />)}
+                  {r.txns.filter((t) => t.deduct_stock !== false || t.kind === "branch_move").map((t) => <BillDetail key={t.id} t={t} partyName={r.name} />)}
                 </div>
               )}
             </div>

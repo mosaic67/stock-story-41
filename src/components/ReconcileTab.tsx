@@ -62,6 +62,27 @@ export function ReconcileTab() {
     inv("stock_closings");
   };
 
+  const mainMon = txns.filter((t) => monthKey(t.created_at) === cur);
+  const wholesale = mainMon.filter((t) => t.kind === "customer" && t.deduct_stock !== false).reduce((s, t) => s + txnTotal(t), 0);
+  const [mainCounts, setMainCounts] = useState<Record<string, string>>({});
+  const [mainOpen, setMainOpen] = useState(false);
+  const mainRows = products.map((p) => {
+    const c = mainCounts[p.id];
+    const sold = c === undefined || c === "" ? 0 : Math.max(0, Number(p.stock) - Number(c));
+    return { p, sold, amt: sold * Number(p.price) };
+  });
+  const retail = mainRows.reduce((s, r) => s + r.amt, 0);
+  const saveMain = async () => {
+    const ch = products.filter((p) => mainCounts[p.id] !== undefined && mainCounts[p.id] !== "");
+    if (!ch.length) return void toast.error("กรอกน้ำหนักจริงอย่างน้อย 1 รายการ");
+    for (const p of ch) {
+      const { error } = await supabase.from("products").update({ stock: Number(mainCounts[p.id]) }).eq("id", p.id);
+      if (error) return void toast.error(error.message);
+    }
+    toast.success("ปรับสต๊อกคลังหลักตามน้ำหนักจริงแล้ว");
+    setMainCounts({}); setMainOpen(false); inv("products");
+  };
+
   return (
     <div className="space-y-4">
       <p className="px-1 text-sm text-muted-foreground">กระทบยอดสิ้นเดือน: เทียบยอดที่โอนไปสาขากับยอดขายหน้าร้านจริง และดูสินค้าคงเหลือที่สาขา</p>
@@ -72,6 +93,37 @@ export function ReconcileTab() {
           ))}
         </div>
       )}
+      <Card>
+        <div className="flex items-center justify-between gap-2">
+          <h3 className="font-display text-lg">สาขาหลัก (คลังใหญ่)</h3>
+          <Button size="sm" variant="secondary" onClick={() => setMainOpen(!mainOpen)}><ClipboardCheck className="h-4 w-4" />{mainOpen ? "ซ่อน" : "กรอกน้ำหนักจริง"}</Button>
+        </div>
+        <div className="mt-2 grid grid-cols-3 gap-2 text-center text-sm">
+          <div className="rounded-xl bg-muted/50 p-2"><p className="text-xs text-muted-foreground">ขายส่ง (ลูกค้าพิเศษ)</p><p className="font-semibold">{baht(wholesale)}</p></div>
+          <div className="rounded-xl bg-muted/50 p-2"><p className="text-xs text-muted-foreground">ขายปลีก (จากนับจริง)</p><p className="font-semibold">{baht(retail)}</p></div>
+          <div className="rounded-xl bg-muted/50 p-2"><p className="text-xs text-muted-foreground">รวมยอดขาย</p><p className="font-semibold ig-text">{baht(wholesale + retail)}</p></div>
+        </div>
+        {mainOpen && (
+          <div className="mt-3 overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="text-xs text-muted-foreground"><tr><th className="py-1 text-left">สินค้า</th><th className="text-right">ตามระบบ</th><th className="text-right">นับจริง</th><th className="text-right">ขายปลีก</th><th className="text-right">ยอดเงิน</th></tr></thead>
+              <tbody>
+                {mainRows.map(({ p, sold, amt }) => (
+                  <tr key={p.id} className="border-t">
+                    <td className="py-1">{p.name} <span className="text-xs text-muted-foreground">({p.unit})</span></td>
+                    <td className="text-right">{num(Number(p.stock))}</td>
+                    <td className="w-24 pl-2"><Input type="number" className="h-8 text-right" value={mainCounts[p.id] ?? ""} onChange={(e) => setMainCounts({ ...mainCounts, [p.id]: e.target.value })} /></td>
+                    <td className="text-right">{num(sold)}</td>
+                    <td className="text-right">{baht(amt)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <p className="mt-2 text-xs text-muted-foreground">ขายปลีก = สต๊อกตามระบบ − น้ำหนักนับจริง × ราคาขาย · ขายส่ง = บิลลูกค้าพิเศษที่หักสต๊อกในเดือนนี้</p>
+            <Button data-edit size="sm" className="ig-gradient mt-2 w-full border-0 text-on-gradient" onClick={saveMain}>บันทึกและปรับสต๊อกคลังหลักตามนับจริง</Button>
+          </div>
+        )}
+      </Card>
       {branches.map((b) => {
         const all = txns.filter((t) => t.branch_id === b.id || (t.kind === "branch_move" && t.to_branch_id === b.id));
         const mon = all.filter((t) => monthKey(t.created_at) === cur);
