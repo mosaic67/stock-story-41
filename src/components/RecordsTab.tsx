@@ -21,6 +21,8 @@ export function usePartyName() {
   return (t: Txn) =>
     t.kind === "stock_in"
       ? "รับเข้าคลังหลัก"
+      : t.kind === "branch_move"
+      ? "ย้ายจาก สาขา " + (branches.find((b) => b.id === t.branch_id)?.name ?? "-") + " → สาขา " + (branches.find((b) => b.id === t.to_branch_id)?.name ?? "-")
       : t.kind === "branch_sale"
       ? "ขายหน้าร้าน สาขา " + (branches.find((b) => b.id === t.branch_id)?.name ?? "-")
       : t.kind === "branch"
@@ -69,8 +71,9 @@ export function RecordsTab() {
   const { data: txns = [] } = useTransactions();
   const inv = useInvalidate();
 
-  const [kind, setKind] = useState<"branch" | "customer" | "branch_sale" | "stock_in">("branch");
+  const [kind, setKind] = useState<"branch" | "customer" | "branch_sale" | "stock_in" | "branch_move">("branch");
   const [partyId, setPartyId] = useState("");
+  const [toId, setToId] = useState("");
   const [note, setNote] = useState("");
   const [deduct, setDeduct] = useState(true);
   const [lines, setLines] = useState<Line[]>([]);
@@ -109,16 +112,17 @@ export function RecordsTab() {
 
   const saveBill = async () => {
     if (!partyId && kind !== "stock_in") return void toast.error(kind !== "customer" ? "เลือกสาขา" : "เลือกลูกค้า");
+    if (kind === "branch_move" && (!toId || toId === partyId)) return void toast.error("เลือกสาขาปลายทางที่ไม่ใช่สาขาต้นทาง");
     if (!lines.length) return void toast.error("เพิ่มรายการสินค้าก่อน");
     const { data, error } = await supabase.from("transactions").insert({
-      kind, note: note || null, branch_id: kind === "branch" || kind === "branch_sale" ? partyId : null, customer_id: kind === "customer" ? partyId : null,
+      kind, note: note || null, branch_id: kind === "branch" || kind === "branch_sale" || kind === "branch_move" ? partyId : null, to_branch_id: kind === "branch_move" ? toId : null, customer_id: kind === "customer" ? partyId : null,
       deduct_stock: kind === "customer" ? deduct : kind === "branch" || kind === "stock_in",
     }).select().single();
     if (error || !data) return void toast.error(error?.message ?? "ผิดพลาด");
     const { error: e2 } = await supabase.from("transaction_items").insert(lines.map((l) => ({ ...l, note: l.note || null, transaction_id: data.id })));
     if (e2) return void toast.error(e2.message);
     toast.success("บันทึกบิลแล้ว");
-    setLines([]); setNote("");
+    setLines([]); setNote(""); setToId("");
     inv("transactions", "products");
   };
 
@@ -147,18 +151,25 @@ export function RecordsTab() {
     <div className="space-y-4">
       <Card data-edit>
         <h2 className="mb-3 font-display text-lg">บันทึกบิลใหม่</h2>
-        <div className="mb-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
-          {(["branch", "branch_sale", "customer", "stock_in"] as const).map((k) => (
-            <button key={k} onClick={() => { setKind(k); setPartyId(""); if (k !== "customer" && pick.price_type === "special") update({ price_type: "retail" }); }}
+        <div className="mb-3 grid grid-cols-2 gap-2 sm:grid-cols-5">
+          {(["branch", "branch_move", "branch_sale", "customer", "stock_in"] as const).map((k) => (
+            <button key={k} onClick={() => { setKind(k); setPartyId(""); setToId(""); if (k !== "customer" && pick.price_type === "special") update({ price_type: "retail" }); }}
               className={`rounded-full border py-2 text-sm font-medium transition ${kind === k ? "ig-gradient border-transparent text-on-gradient" : "hover:bg-muted"}`}>
-              {k === "branch" ? "โอนไปสาขา" : k === "branch_sale" ? "ขายหน้าร้านสาขา" : k === "customer" ? "ขายลูกค้าพิเศษ" : "รับสินค้าเข้าคลัง"}
+              {k === "branch" ? "โอนไปสาขา" : k === "branch_move" ? "โอนระหว่างสาขา" : k === "branch_sale" ? "ขายหน้าร้านสาขา" : k === "customer" ? "ขายลูกค้าพิเศษ" : "รับสินค้าเข้าคลัง"}
             </button>
           ))}
         </div>
         {kind === "stock_in" ? <p className="rounded-xl bg-muted/50 p-3 text-xs text-muted-foreground">รับสินค้าเข้าคลังหลัก: เพิ่มสต๊อกคลังหลักและเก็บเป็นประวัติล็อตนำเข้า (ใส่ราคาทุนในช่องราคาได้ · หมายเหตุบิลใช้ระบุเลขล็อต/ผู้ขาย)</p> : <select className={sel} value={partyId} onChange={(e) => { setPartyId(e.target.value); }}>
-          <option value="">— {kind !== "customer" ? "เลือกสาขา" : "เลือกลูกค้า"} —</option>
+          <option value="">— {kind === "branch_move" ? "สาขาต้นทาง" : kind !== "customer" ? "เลือกสาขา" : "เลือกลูกค้า"} —</option>
           {(kind !== "customer" ? branches : customers).map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
         </select>}
+        {kind === "branch_move" && <>
+          <select className={`${sel} mt-2`} value={toId} onChange={(e) => setToId(e.target.value)}>
+            <option value="">— สาขาปลายทาง —</option>
+            {branches.filter((b) => b.id !== partyId).map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
+          </select>
+          <p className="mt-2 rounded-xl bg-muted/50 p-3 text-xs text-muted-foreground">โอนระหว่างสาขา: ไม่ตัดสต๊อกคลังหลัก · หักยอดโอน/สต๊อกของสาขาต้นทาง และเพิ่มให้สาขาปลายทาง (ดูที่แท็บกระทบยอด)</p>
+        </>}
 
         <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-6">
           <select className={`${sel} col-span-2`} value={pick.product_id} onChange={(e) => update({ product_id: e.target.value })}>

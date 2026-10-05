@@ -25,7 +25,7 @@ export function PartiesTab() {
   if (sel) return <PartyDetail sel={sel} onBack={() => setSel(null)} />;
 
   const totalOf = (kind: string, id: string) =>
-    txns.filter((t) => t.kind !== "branch_sale" && (kind === "branch" ? t.branch_id : t.customer_id) === id).reduce((s, t) => s + txnTotal(t), 0);
+    txns.filter((t) => t.kind !== "branch_sale" && t.kind !== "branch_move" && t.kind !== "stock_in" && (kind === "branch" ? t.branch_id : t.customer_id) === id).reduce((s, t) => s + txnTotal(t), 0);
 
   const addBranch = async () => {
     if (!bn.trim()) return;
@@ -75,7 +75,7 @@ export function PartiesTab() {
 
 function PartyDetail({ sel, onBack }: { sel: NonNullable<Sel>; onBack: () => void }) {
   const { data: txns = [] } = useTransactions();
-  const list = txns.filter((t) => t.kind !== "branch_sale" && (sel.kind === "branch" ? t.branch_id : t.customer_id) === sel.id);
+  const list = txns.filter((t) => t.kind !== "branch_sale" && t.kind !== "branch_move" && t.kind !== "stock_in" && (sel.kind === "branch" ? t.branch_id : t.customer_id) === sel.id);
   return (
     <div className="space-y-4">
       <button onClick={onBack} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"><ChevronLeft className="h-4 w-4" />กลับ</button>

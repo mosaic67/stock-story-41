@@ -12,3 +12,4 @@
 - Login uses username mapped to synthetic email `<id>@obwangnoi.app`; why: org-internal app, no email.
 - Writes allowed only for admin role via RLS; viewers get per-tab `profiles.perms`; UI hides `[data-edit]` under `.ro`.
 - Audit log written by DB trigger `write_audit` on all data tables; why: no client code needed.
+- Branch-to-branch transfers are transactions kind "branch_move" (branch_id = source, to_branch_id = destination, deduct_stock=false); why: reconcile subtracts from source and adds to destination without touching main stock.
