@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Package, Pencil, X } from "lucide-react";
+import { Plus, Package, Pencil, X, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -37,9 +37,20 @@ export function ProductsTab() {
   };
 
   const list = products.filter((p) => `${p.code} ${p.name}`.toLowerCase().includes(search.toLowerCase()));
+  const totalValue = products.reduce((s, p) => s + Number(p.stock) * Number(p.price), 0);
 
   return (
     <div className="space-y-4">
+      <Card>
+        <div className="flex items-center gap-3">
+          <div className="ig-ring shrink-0"><div className="flex h-11 w-11 items-center justify-center rounded-full bg-card"><Wallet className="h-5 w-5" /></div></div>
+          <div className="min-w-0 flex-1">
+            <p className="text-xs text-muted-foreground">มูลค่าสต็อกคงเหลือรวม (สาขาหลัก)</p>
+            <p className="font-display text-2xl font-bold">{baht(totalValue)}</p>
+          </div>
+        </div>
+      </Card>
+
       <Card data-edit>
         <h2 className="mb-3 font-display text-lg">{editing ? "แก้ไขสินค้า" : "เพิ่มสินค้าใหม่"}</h2>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
@@ -67,6 +78,7 @@ export function ProductsTab() {
               <p className="truncate font-semibold">{p.name}</p>
               <p className="text-xs text-muted-foreground">#{p.code} · {baht(Number(p.price))} / {p.unit}</p>
               <p className={`text-xs font-semibold ${Number(p.stock) <= 0 ? "text-destructive" : "text-foreground"}`}>คงเหลือ {Number(Number(p.stock).toFixed(2)).toLocaleString("th-TH")} {p.unit}</p>
+              <p className="text-xs text-muted-foreground">มูลค่าคงเหลือ: <span className="font-semibold text-foreground">{baht(Number(p.stock) * Number(p.price))}</span></p>
             </div>
             <button data-edit className="rounded-full p-2 text-muted-foreground hover:bg-muted" onClick={() => { setEditing(p.id); setForm({ code: p.code, name: p.name, unit: p.unit, price: String(p.price) }); window.scrollTo({ top: 0, behavior: "smooth" }); }}><Pencil className="h-4 w-4" /></button>
             <ConfirmDelete label={p.name} onConfirm={async () => { await supabase.from("products").delete().eq("id", p.id); inv("products", "product_units"); toast.success("ลบแล้ว"); }} />
