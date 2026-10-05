@@ -34,13 +34,16 @@ export function ReconcileTab() {
   const [counts, setCounts] = useState<Record<string, string>>({});
   const [histOpen, setHistOpen] = useState<string | null>(null);
 
-  const perProduct = (ts: Txn[], kind: string) => {
+  const perProduct = (ts: Txn[], kind: string, bid: string) => {
     const m = new Map<string, number>();
-    ts.filter((t) => t.kind === kind).forEach((t) => t.transaction_items.forEach((i) => {
-      if (!i.product_id) return;
-      const p = products.find((x) => x.id === i.product_id);
-      m.set(i.product_id, (m.get(i.product_id) ?? 0) + baseQty(p, units, i.unit_name, Number(i.qty)));
-    }));
+    ts.filter((t) => t.kind === kind || (kind === "branch" && t.kind === "branch_move")).forEach((t) => {
+      const sign = t.kind === "branch_move" && t.branch_id === bid ? -1 : 1;
+      t.transaction_items.forEach((i) => {
+        if (!i.product_id) return;
+        const p = products.find((x) => x.id === i.product_id);
+        m.set(i.product_id, (m.get(i.product_id) ?? 0) + sign * baseQty(p, units, i.unit_name, Number(i.qty)));
+      });
+    });
     return m;
   };
 
@@ -70,12 +73,12 @@ export function ReconcileTab() {
         </div>
       )}
       {branches.map((b) => {
-        const all = txns.filter((t) => t.branch_id === b.id);
+        const all = txns.filter((t) => t.branch_id === b.id || (t.kind === "branch_move" && t.to_branch_id === b.id));
         const mon = all.filter((t) => monthKey(t.created_at) === cur);
-        const sent = mon.filter((t) => t.kind === "branch").reduce((s, t) => s + txnTotal(t), 0);
+        const sent = mon.filter((t) => t.kind === "branch" || t.kind === "branch_move").reduce((s, t) => s + (t.kind === "branch_move" && t.branch_id === b.id ? -1 : 1) * txnTotal(t), 0);
         const sold = mon.filter((t) => t.kind === "branch_sale").reduce((s, t) => s + txnTotal(t), 0);
-        const inM = perProduct(mon, "branch"), outM = perProduct(mon, "branch_sale");
-        const inAll = perProduct(all, "branch"), outAll = perProduct(all, "branch_sale");
+        const inM = perProduct(mon, "branch", b.id), outM = perProduct(mon, "branch_sale", b.id);
+        const inAll = perProduct(all, "branch", b.id), outAll = perProduct(all, "branch_sale", b.id);
         const ids = Array.from(new Set([...inAll.keys(), ...outAll.keys()]));
         const myClosings = closings.filter((c) => c.branch_id === b.id);
         if (!ids.length && !myClosings.length) return null;
