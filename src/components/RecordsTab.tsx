@@ -129,7 +129,8 @@ export function RecordsTab() {
   const months = useMemo(() => Array.from(new Set(txns.map((t) => monthKey(t.created_at)))), [txns]);
   const [month, setMonth] = useState("");
   const curMonth = month || months[0] || "";
-  const monthTx = txns.filter((t) => monthKey(t.created_at) === curMonth);
+  const [kf, setKf] = useState("all");
+  const monthTx = txns.filter((t) => monthKey(t.created_at) === curMonth && (kf === "all" || t.kind === kf));
   const days = useMemo(() => {
     const m = new Map<string, Txn[]>();
     monthTx.forEach((t) => m.set(dayKey(t.created_at), [...(m.get(dayKey(t.created_at)) ?? []), t]));
@@ -224,6 +225,13 @@ export function RecordsTab() {
         </div>
       )}
 
+      {curMonth && (
+        <div className="flex gap-2 overflow-x-auto pb-1">
+          {([["all", "ทั้งหมด"], ["branch", "โอนสาขา"], ["customer", "ลูกค้าพิเศษ"], ["branch_sale", "ขายหน้าร้าน"], ["branch_move", "โอนระหว่างสาขา"], ["stock_in", "รับเข้าคลัง"]] as const).map(([k, l]) => (
+            <button key={k} onClick={() => setKf(k)} className={`shrink-0 rounded-full border px-3 py-1 text-xs ${kf === k ? "bg-foreground text-background" : "hover:bg-muted"}`}>{l}</button>
+          ))}
+        </div>
+      )}
       {curMonth && (
         <Card>
           <div className="flex items-baseline justify-between">
