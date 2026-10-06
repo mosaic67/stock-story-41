@@ -36,6 +36,13 @@
       "when": 1791164794104,
       "tag": "0004_branch_move_to_branch",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1791273920548,
+      "tag": "0005_agent_audit_logs",
+      "breakpoints": true
     }
   ]
 }
