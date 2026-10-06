@@ -7,7 +7,8 @@ export const Route = createFileRoute("/api/agent/tools")({
       OPTIONS: async () => new Response(null, { status: 204, headers: CORS }),
       GET: async ({ request }) => {
         if (!authorized(request)) return reply({ success: false, error: "Unauthorized" }, 401);
-        return reply({ success: true, data: toolList() });
+        const list = toolList();
+        return reply({ success: true, data: list.data, tools: list.tools });
       },
     },
   },
