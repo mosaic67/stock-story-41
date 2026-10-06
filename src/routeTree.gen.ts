@@ -10,33 +10,53 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiAgentExecRouteImport } from './routes/api/agent/exec'
+import { Route as ApiAgentToolsRouteImport } from './routes/api/agent/tools'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAgentExecRoute = ApiAgentExecRouteImport.update({
+  id: '/api/agent/exec',
+  path: '/api/agent/exec',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAgentToolsRoute = ApiAgentToolsRouteImport.update({
+  id: '/api/agent/tools',
+  path: '/api/agent/tools',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/api/agent/exec': typeof ApiAgentExecRoute
+  '/api/agent/tools': typeof ApiAgentToolsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/api/agent/exec': typeof ApiAgentExecRoute
+  '/api/agent/tools': typeof ApiAgentToolsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/api/agent/exec': typeof ApiAgentExecRoute
+  '/api/agent/tools': typeof ApiAgentToolsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/api/agent/exec' | '/api/agent/tools'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/api/agent/exec' | '/api/agent/tools'
+  id: '__root__' | '/' | '/api/agent/exec' | '/api/agent/tools'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ApiAgentExecRoute: typeof ApiAgentExecRoute
+  ApiAgentToolsRoute: typeof ApiAgentToolsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +68,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/agent/exec': {
+      id: '/api/agent/exec'
+      path: '/api/agent/exec'
+      fullPath: '/api/agent/exec'
+      preLoaderRoute: typeof ApiAgentExecRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/agent/tools': {
+      id: '/api/agent/tools'
+      path: '/api/agent/tools'
+      fullPath: '/api/agent/tools'
+      preLoaderRoute: typeof ApiAgentToolsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ApiAgentExecRoute: ApiAgentExecRoute,
+  ApiAgentToolsRoute: ApiAgentToolsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

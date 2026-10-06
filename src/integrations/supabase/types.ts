@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      agent_audit_logs: {
+        Row: {
+          action: string
+          created_at: string
+          error: string | null
+          id: number
+          params: Json | null
+          status: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          error?: string | null
+          id?: number
+          params?: Json | null
+          status: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          error?: string | null
+          id?: number
+          params?: Json | null
+          status?: string
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           action: string
