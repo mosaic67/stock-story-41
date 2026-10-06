@@ -241,8 +241,11 @@ export function authorized(req: Request) {
   return a.length === b.length && timingSafeEqual(a, b);
 }
 
-export const toolList = () =>
-  Object.entries(ACTIONS).map(([action, a]) => ({ action, description: a.description, write: a.write, parameters: a.json }));
+export const toolList = () => {
+  const base = Object.entries(ACTIONS).map(([action, a]) => ({ action, description: a.description, write: a.write, parameters: a.json }));
+  const tools = base.map((t) => ({ ...t, name: t.action }));
+  return { data: base, tools };
+};
 
 async function log(db: Admin, action: string, params: unknown, status: string, error?: string) {
   await db.from("agent_audit_logs").insert({ action, params: params as never, status, error: error ?? null });
