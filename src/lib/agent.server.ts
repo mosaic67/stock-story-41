@@ -230,7 +230,7 @@ export const CORS = {
   "Access-Control-Allow-Headers": "Content-Type, X-Agent-Key",
 };
 
-export const reply = (body: { success: boolean; data?: unknown; error?: string }, status = 200) =>
+export const reply = (body: { success: boolean; data?: unknown; error?: string; tools?: unknown }, status = 200) =>
   Response.json(body, { status, headers: CORS });
 
 export function authorized(req: Request) {
